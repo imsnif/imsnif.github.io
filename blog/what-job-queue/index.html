@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Implementing a job queue in Rust :: poor.dev</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here"/>
+<meta name="keywords" content=""/>
+<meta name="robots" content="noodp"/>
+<link rel="canonical" href="/blog/what-job-queue/" />
+
+
+<link rel="stylesheet" href="/assets/style.css">
+
+  <link rel="stylesheet" href="/assets/green.css">
+
+
+
+<link rel="stylesheet" href="/style.css">
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/apple-touch-icon-144-precomposed.png">
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Implementing a job queue in Rust :: poor.dev — " />
+<meta name="twitter:description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here" />
+<meta name="twitter:site" content="/" />
+<meta name="twitter:creator" content="Aram Drevekenin" />
+<meta name="twitter:image" content="/img/queue-cover-image.jpg">
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Implementing a job queue in Rust :: poor.dev — ">
+<meta property="og:description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here" />
+<meta property="og:url" content="/blog/what-job-queue/" />
+<meta property="og:site_name" content="Implementing a job queue in Rust" />
+<meta property="og:image" content="/img/queue-cover-image.jpg">
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+<meta property="article:published_time" content="2019-10-30 20:00:00 &#43;0200 &#43;0200" />
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="">
+
+
+<div class="container center">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    poor.dev
+  </div>
+</a>
+
+    </div>
+    <div class="menu-trigger">menu</div>
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+        
+          <li><a href="/external_work">External Work</a></li>
+        
+      
+        
+          <li><a href="/blog">Blog</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+      
+        <li><a href="/external_work">External Work</a></li>
+      
+    
+      
+        <li><a href="/blog">Blog</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="/blog/what-job-queue/">Implementing a job queue in Rust</a></h1>
+  <div class="post-meta">
+      
+    <span class="post-date">
+      2019-10-30
+    </span>
+    
+    
+    <span class="post-authorr">::
+      <a href="https://twitter.com/im_snif">Aram Drevekenin</a>
+    </span>
+    
+  </div>
+
+  
+
+  
+  <img src="/img/queue-cover-image.jpg" class="post-cover" />
+  
+
+  <div class="post-content">
+    <p>I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it <a href="https://github.com/imsnif/bandwhich">here</a></p>
+<p>I try to always be very open to new ideas and better or different ways of doing things. If you have any thoughts, please do drop me a line! :)</p>
+<p>In this first post, I&rsquo;d like to talk about implementing a job queue to resolve IPs into their hostnames by querying a remote DNS server.</p>
+<h2 id="a-little-bit-about-bandwhich">A little bit about &ldquo;bandwhich&rdquo;</h2>
+<p>&ldquo;bandwhich&rdquo;&rsquo;s purpose is to help keep track of and debug issues involving network traffic. Like a network sniffer, it listens on a given network interface and records traffic. It then continuously displays information (eg. bandwidth) by process, connection and remote network address in a terminal UI.</p>
+<h2 id="why-do-we-need-a-queue">Why do we need a queue?</h2>
+<p>When &ldquo;bandwhich&rdquo; displays information about a network address, it would ideally like to display an &ldquo;easier on the eyes&rdquo; hostname rather than an IP address (eg. &ldquo;dns.google&rdquo; instead of &ldquo;8.8.8.8&rdquo;).
+To do this, it uses libc&rsquo;s <a href="http://man7.org/linux/man-pages/man3/getnameinfo.3.html">getnameinfo</a> function. Unfortunately though, this function blocks the current thread. Waiting for it to return before displaying information would be a bad user experience.</p>
+<p>For this reason, we elect to have a best effort resolution. Whenever we encounter a previously unknown IP address, we place it in a queue and have a different thread read it and resolve it. We display the raw IP address until it is resolved, and its hostname once we know it.</p>
+<p>We&rsquo;ll be concentrating on implementing the queue itself. The resolution and recording of the host addresses are out of scope for this post.</p>
+<h2 id="how-does-the-queue-work">How does the queue work?</h2>
+<p>The queue consists of several components that work together to achieve the functionality we desire.</p>
+<p><img src="/img/queue-diagram.png" alt="diagram"></p>
+<h3 id="the-api">The API</h3>
+<ul>
+<li>
+<p><strong>The &ldquo;publish&rdquo; function</strong>: used to give our queue a list of ips that need to be resolved.</p>
+</li>
+<li>
+<p><strong>The &ldquo;subscribe&rdquo; function</strong>: asks the queue to give it an ip address to resolve, or to block its thread otherwise.</p>
+</li>
+<li>
+<p><strong>The &ldquo;cleanup&rdquo; function</strong>: called when our program ends, so that the subscribe function knows it can stop asking for more work.</p>
+</li>
+</ul>
+<h3 id="vecdeque">VecDeque</h3>
+<p>The VecDeque is a data structure from the std library. Like a normal Vec, it&rsquo;s a growable list on the heap memory, and unlike Vec, it&rsquo;s double-ended. Meaning that adding/removing elements from its beginning or end is a relatively cheap operation. For more information, take a look at <a href="https://doc.rust-lang.org/std/collections/struct.VecDeque.html">the official docs</a></p>
+<p>In our dns queue, its role is to keep track of the ip addresses we need to resolve. We push an address onto its end when we want it to be resolved, and pull an address from its beginning when we want to resolve it.</p>
+<p>Our queue is represented as an <code>Option&lt;VecDeque&gt;</code> to make it easier for the subscribe function to know if it should be waiting for more work. As long as the Option is a <code>Some(VecDeque)</code>, even if the queue happens to be empty at the time, the subscribe function should keep blocking its thread. When it is a <code>None</code>, the subscribe function should stop listening (read: return a None itself).</p>
+<h3 id="condvar">Condvar</h3>
+<p>The condvar (conditional variable) is our alarm clock. It allows us to block a thread in one place and wake it up in another: <a href="https://doc.rust-lang.org/std/sync/struct.Condvar.html">the official docs</a></p>
+<h3 id="mutex">Mutex</h3>
+<p>The mutex is what we use to wrap data in order to make sure different threads can read to and write from it safely. It will only let one thread access it at a time.
+In our case, we use it to protect the <code>Option&lt;VecDeque&gt;</code>. Here are <a href="https://doc.rust-lang.org/std/sync/struct.Mutex.html">the official docs</a></p>
+<h2 id="the-code">The code</h2>
+<p>We want to start with a struct that has a jobs queue and a conditional variable.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">DnsQueue</span> {
+      jobs: <span style="color:#a6e22e">Mutex</span><span style="color:#f92672">&lt;</span>Option<span style="color:#f92672">&lt;</span>VecDeque<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;&gt;&gt;</span>,
+      cvar: <span style="color:#a6e22e">Condvar</span>,
+  }
+
+  <span style="color:#66d9ef">impl</span> DnsQueue {
+      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>() -&gt; <span style="color:#a6e22e">Self</span> {
+          DnsQueue {
+              jobs: <span style="color:#a6e22e">Mutex</span>::new(Some(VecDeque::new())),
+              cvar: <span style="color:#a6e22e">Condvar</span>::new(),
+          }
+      }
+  }
+</code></pre></div><p>Our jobs are a Mutex wrapping an <code>Option&lt;VecDeque&gt;</code> of <code>Ipv4Addr</code>. As mentioned earlier, we represent our queue as an Option so that we could let our subscriber function know it can stop listening by switching the <code>Some(VecDeque)</code> for a <code>None</code> value.</p>
+<p>Next, our publish function - called here &ldquo;resolve_ips&rdquo; to convey more information in the code using our queue:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">resolve_ips</span>(<span style="color:#f92672">&amp;</span>self, unresolved_ips: Vec<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span>) {
+        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
+        <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Some(queue) <span style="color:#f92672">=</span> jobs.as_mut() {
+            queue.extend(unresolved_ips);
+            self.cvar.notify_all();
+        }
+    }
+</code></pre></div><p>Here, we receive a list of IPs, and then:</p>
+<ol>
+<li>acquire an exclusive Mutex lock on the queue</li>
+<li>push the IPs onto the back of the <code>VecDeque</code></li>
+<li>send a notification to all subscribers through our <code>Condvar</code>, letting them know there&rsquo;s some work ready for them</li>
+<li>drop the mutex lock implicitly as the function goes out of scope</li>
+</ol>
+<p>Now, our subscribe function. Here, we call it &ldquo;wait_for_job&rdquo;:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">wait_for_job</span>(<span style="color:#f92672">&amp;</span>self) -&gt; Option<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span> {
+      <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
+      <span style="color:#66d9ef">loop</span> {
+          <span style="color:#66d9ef">match</span> jobs.as_mut()<span style="color:#f92672">?</span>.pop_front() {
+              Some(job) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">return</span> Some(job),
+              None <span style="color:#f92672">=&gt;</span> {
+                  jobs <span style="color:#f92672">=</span> self.cvar.wait(jobs).unwrap()
+              }
+          }
+      }
+  }
+</code></pre></div><p>This function:</p>
+<ol>
+<li>checks if the <code>Option&lt;VecDeque&gt;</code> contains a VecDeque or a None. If it contains a None, it returns it here: <code>jobs.as_mut()?</code> (<a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.as_mut"><code>as_mut</code></a> will return a None if that&rsquo;s what the <code>Option</code> contains).</li>
+<li>Then, if there&rsquo;s something in the queue, it returns it. Otherwise, it sleeps.</li>
+</ol>
+<p>We sleep by moving our MutexGuard (jobs) into the Condvar and reassigning it to the Condvar&rsquo;s return value. The Condvar unlocks the guard, thus freeing it for writing. When it returns, we repeat this process, so that if it returned prematurely, we&rsquo;ll simply sleep again.</p>
+<p>We have to re-check our queue every time we wake up, because at times the <code>wait</code> function will return without actually being woken up, for more info check out the last paragraph in <a href="https://doc.rust-lang.org/std/sync/struct.Condvar.html#method.wait">the docs</a></p>
+<p>Finally, our cleanup function, called &ldquo;end&rdquo; in our case:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">end</span>(<span style="color:#f92672">&amp;</span>self) {
+      <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
+      <span style="color:#f92672">*</span>jobs <span style="color:#f92672">=</span> None;
+      self.cvar.notify_all();
+  }
+</code></pre></div><p>The end function:</p>
+<ol>
+<li>acquires a lock on the <code>Mutex</code></li>
+<li>changes the <code>Option</code> inside the <code>Mutex</code> to <code>None</code></li>
+<li>sends a change notification through the Condvar</li>
+</ol>
+<h2 id="putting-it-all-together">Putting it all together</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">use</span> ::std::collections::VecDeque;
+  <span style="color:#66d9ef">use</span> ::std::net::Ipv4Addr;
+  <span style="color:#66d9ef">use</span> ::std::sync::{Condvar, Mutex};
+
+  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">DnsQueue</span> {
+      jobs: <span style="color:#a6e22e">Mutex</span><span style="color:#f92672">&lt;</span>Option<span style="color:#f92672">&lt;</span>VecDeque<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;&gt;&gt;</span>,
+      cvar: <span style="color:#a6e22e">Condvar</span>,
+  }
+
+  <span style="color:#66d9ef">impl</span> DnsQueue {
+      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>() -&gt; <span style="color:#a6e22e">Self</span> {
+          DnsQueue {
+              jobs: <span style="color:#a6e22e">Mutex</span>::new(Some(VecDeque::new())),
+              cvar: <span style="color:#a6e22e">Condvar</span>::new(),
+          }
+      }
+  }
+
+  <span style="color:#66d9ef">impl</span> DnsQueue {
+      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">resolve_ips</span>(<span style="color:#f92672">&amp;</span>self, unresolved_ips: Vec<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span>) {
+          <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
+          <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Some(queue) <span style="color:#f92672">=</span> jobs.as_mut() {
+              queue.extend(unresolved_ips);
+              self.cvar.notify_all();
+          }
+      }
+      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">wait_for_job</span>(<span style="color:#f92672">&amp;</span>self) -&gt; Option<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span> {
+          <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
+          <span style="color:#66d9ef">loop</span> {
+              <span style="color:#66d9ef">match</span> jobs.as_mut()<span style="color:#f92672">?</span>.pop_front() {
+                  Some(job) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">return</span> Some(job),
+                  None <span style="color:#f92672">=&gt;</span> {
+                      jobs <span style="color:#f92672">=</span> self.cvar.wait(jobs).unwrap()
+                  }
+              }
+          }
+      }
+      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">end</span>(<span style="color:#f92672">&amp;</span>self) {
+          <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
+          <span style="color:#f92672">*</span>jobs <span style="color:#f92672">=</span> None;
+          self.cvar.notify_all();
+      }
+  }
+</code></pre></div><p>An example usage of our queue might be something like:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
+      <span style="color:#66d9ef">let</span> dns_queue <span style="color:#f92672">=</span> Arc::new(DnsQueue::new());
+      <span style="color:#66d9ef">let</span> dns_handler <span style="color:#f92672">=</span> thread::spawn({
+          <span style="color:#66d9ef">let</span> dns_queue <span style="color:#f92672">=</span> dns_queue.clone();
+          <span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
+              <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">let</span> Some(ip) <span style="color:#f92672">=</span> dns_queue.wait_for_job() {
+                  <span style="color:#75715e">// do something with ip here
+</span><span style="color:#75715e"></span>              }
+              <span style="color:#75715e">// we get here once we receive a None from the queue
+</span><span style="color:#75715e"></span>          }
+      });
+      
+      <span style="color:#66d9ef">let</span> some_other_thread_handler <span style="color:#f92672">=</span> thread::spawn({
+          <span style="color:#66d9ef">let</span> dns_queue <span style="color:#f92672">=</span> dns_queue.clone();
+          <span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
+              <span style="color:#75715e">// get `unresolved_ips: Vec&lt;Ipv4Addr&gt;` somehow...
+</span><span style="color:#75715e"></span>              dns_queue.resolve_ips(unresolved_ips);
+              <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>              dns_queue.end();
+          }
+      });
+      
+      some_other_thread_handler.join().unwrap();
+      dns_handler.join().unwrap();
+  }
+</code></pre></div><h2 id="finally">Finally</h2>
+<p>It&rsquo;s worth noting that our implementation uses a dns resolution queue of <code>Ipv4Addr</code>. This is the specific case of &ldquo;bandwhich&rdquo;, but this queue could also be used with a Generic <code>T</code> type instead of an <code>Ipv4Addr</code> for other uses.</p>
+<h2 id="credits">Credits</h2>
+<p>Thanks <a href="https://twitter.com/m_ou_se">Mara Bos</a> for the helpful comments.</p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted -->Some diagram icons made by <a href="https://www.flaticon.com/authors/those-icons">Those Icons</a> and <a href="https://www.flaticon.com/authors/smashicons">Smash Icons</a> from <a href="https://www.flaticon.com">https://www.flaticon.com</a><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+
+  </div>
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+</footer>
+
+<script src="/assets/main.js"></script>
+
+  
+</div>
+
+</body>
+</html>

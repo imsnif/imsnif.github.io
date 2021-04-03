@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blogs on poor.dev</title>
+    <link>/blog/</link>
+    <description>Recent content in Blogs on poor.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 30 Oct 2019 20:00:00 +0200</lastBuildDate>
+    
+	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Implementing a job queue in Rust</title>
+      <link>/blog/what-job-queue/</link>
+      <pubDate>Wed, 30 Oct 2019 20:00:00 +0200</pubDate>
+      
+      <guid>/blog/what-job-queue/</guid>
+      <description>I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here</description>
+    </item>
+    
+  </channel>
+</rss>
