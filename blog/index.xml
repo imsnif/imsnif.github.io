@@ -13,8 +13,7 @@
       <pubDate>Mon, 19 Jul 2021 09:00:00 +0200</pubDate>
       
       <guid>/blog/performance/</guid>
-      <description>During the past couple of months, we&amp;rsquo;ve been going through the process of troubleshooting and improving the performance of Zellij. During the course of our work, we found several issues and bottlenecks, and had to find some creative solutions in order to solve or get around them.
-In this post I&amp;rsquo;ll describe and illustrate the two main points we&amp;rsquo;ve recently solved, which brought the app&amp;rsquo;s performance to be on par - and sometimes even exceed - that of similar apps.</description>
+      <description>A writeup of our journey to improve the performance of Zellij</description>
     </item>
     
     <item>
