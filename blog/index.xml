@@ -6,10 +6,16 @@
     <description>Recent content in Blogs on poor.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 30 Oct 2019 20:00:00 +0200</lastBuildDate>
-    
-	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
-    
+    <lastBuildDate>Mon, 19 Jul 2021 09:00:00 +0200</lastBuildDate><atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>How we improved the performance of our Rust app</title>
+      <link>/blog/performance/</link>
+      <pubDate>Mon, 19 Jul 2021 09:00:00 +0200</pubDate>
+      
+      <guid>/blog/performance/</guid>
+      <description>During the past couple of months, we&amp;rsquo;ve been going through the process of troubleshooting and improving the performance of Zellij. During the course of our work, we found several issues and bottlenecks, and had to find some creative solutions in order to solve or get around them.
+In this post I&amp;rsquo;ll describe and illustrate the two main points we&amp;rsquo;ve recently solved, which brought the app&amp;rsquo;s performance to be on par - and sometimes even exceed - that of similar apps.</description>
+    </item>
     
     <item>
       <title>Implementing a job queue in Rust</title>
