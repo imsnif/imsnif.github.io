@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Anatomy of a Terminal Emulator :: poor.dev</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="description" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and causing a small bit of mischief."/>
+<meta name="keywords" content="Terminal, pty, tty, shell, cli, commandline, ANSI, Rust&#34;, Rustlang"/>
+<meta name="robots" content="noodp"/>
+<link rel="canonical" href="/terminal-anatomy/" />
+
+<link rel="stylesheet" href="/style.css">
+
+
+<link rel="stylesheet" href="/assets/style.css">
+
+  <link rel="stylesheet" href="/assets/green.css">
+
+
+
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/apple-touch-icon-144-precomposed.png">
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Anatomy of a Terminal Emulator " />
+<meta name="twitter:description" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and causing a small bit of mischief." />
+<meta name="twitter:site" content="/" />
+<meta name="twitter:creator" content="Aram Drevekenin" />
+<meta name="twitter:image" content="https://www.poor.dev/img/anatomy/cover.png">
+<meta name="twitter:image:alt" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and causing a small bit of mischief.">
+<meta name="twitter:image:width" content="1200">
+<meta name="twitter:image:height" content="630">
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Anatomy of a Terminal Emulator ">
+<meta property="og:description" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and causing a small bit of mischief." />
+<meta property="og:url" content="/terminal-anatomy/" />
+<meta property="og:site_name" content="Anatomy of a Terminal Emulator" />
+<meta property="og:image" content="https://www.poor.dev/img/anatomy/cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and causing a small bit of mischief."/>
+
+<meta property="article:published_time" content="2021-11-02 09:00:00 &#43;0200 &#43;0200" />
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="">
+
+
+<div class="container center">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    poor.dev
+  </div>
+</a>
+
+    </div>
+    <div class="menu-trigger">menu</div>
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+        
+          <li><a href="/external_work">External Work</a></li>
+        
+      
+        
+          <li><a href="/blog">Blog</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+      
+        <li><a href="/external_work">External Work</a></li>
+      
+    
+      
+        <li><a href="/blog">Blog</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="/terminal-anatomy/">Anatomy of a Terminal Emulator</a></h1>
+  <div class="post-meta">
+      
+    <span class="post-date">
+      2021-11-02
+    </span>
+    
+    
+    <span class="post-authorr">::
+      <a href="https://twitter.com/im_snif">Aram Drevekenin</a>
+    </span>
+    
+  </div>
+
+  
+
+  
+  <img src="https://www.poor.dev/img/anatomy/cover.png" class="post-cover" />
+  
+
+  <div class="post-content">
+    <p>The terminal is a ubiquitous platform that has been fairly stable for many years. There are plenty of resources out there for understanding its inner workings, but most of them are either fairly arcane or offer deep knowledge about a very specific area. This post aims to bridge this gap by offering a gentle and broad introduction to the terminal emulator as a platform for development.</p>
+<p>We&rsquo;ll talk about the different parts of the terminal and how they interact, build a small program to read input from the shell and understand how it&rsquo;s interpreted, discuss how to create a user interface in the terminal and finally see how we can use all of this to cause some mischief.</p>
+<p><a href="/blog/terminal-anatomy">Read more&hellip;</a></p>
+
+  </div>
+  
+  <div class="pagination">
+    <div class="pagination__title">
+      <span
+        class="pagination__title-h"></span>
+    </div>
+  </div>
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+</footer>
+
+<script src="/assets/main.js"></script>
+
+  
+</div>
+
+</body>
+</html>

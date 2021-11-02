@@ -9,6 +9,15 @@
     <lastBuildDate>Tue, 02 Nov 2021 09:00:00 +0200</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Anatomy of a Terminal Emulator</title>
+      <link>/terminal-anatomy/</link>
+      <pubDate>Tue, 02 Nov 2021 09:00:00 +0200</pubDate>
+      
+      <guid>/terminal-anatomy/</guid>
+      <description>The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and causing a small bit of mischief.</description>
+    </item>
+    
+    <item>
+      <title>Anatomy of a Terminal Emulator</title>
       <link>/blog/terminal-anatomy/</link>
       <pubDate>Tue, 02 Nov 2021 09:00:00 +0200</pubDate>
       
