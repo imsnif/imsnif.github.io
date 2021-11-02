@@ -194,29 +194,29 @@ To do this, it uses libc&rsquo;s <a href="http://man7.org/linux/man-pages/man3/g
 In our case, we use it to protect the <code>Option&lt;VecDeque&gt;</code>. Here are <a href="https://doc.rust-lang.org/std/sync/struct.Mutex.html">the official docs</a></p>
 <h2 id="the-code">The code</h2>
 <p>We want to start with a struct that has a jobs queue and a conditional variable.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">DnsQueue</span> {
-      jobs: <span style="color:#a6e22e">Mutex</span><span style="color:#f92672">&lt;</span>Option<span style="color:#f92672">&lt;</span>VecDeque<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;&gt;&gt;</span>,
-      cvar: <span style="color:#a6e22e">Condvar</span>,
-  }
-
-  <span style="color:#66d9ef">impl</span> DnsQueue {
-      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>() -&gt; <span style="color:#a6e22e">Self</span> {
-          DnsQueue {
-              jobs: <span style="color:#a6e22e">Mutex</span>::new(Some(VecDeque::new())),
-              cvar: <span style="color:#a6e22e">Condvar</span>::new(),
-          }
-      }
-  }
-</code></pre></div><p>Our jobs are a Mutex wrapping an <code>Option&lt;VecDeque&gt;</code> of <code>Ipv4Addr</code>. As mentioned earlier, we represent our queue as an Option so that we could let our subscriber function know it can stop listening by switching the <code>Some(VecDeque)</code> for a <code>None</code> value.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">  </span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="n">jobs</span>: <span class="nc">Mutex</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">VecDeque</span><span class="o">&lt;</span><span class="n">Ipv4Addr</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">      </span><span class="n">cvar</span>: <span class="nc">Condvar</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="k">impl</span><span class="w"> </span><span class="n">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">          </span><span class="n">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="n">jobs</span>: <span class="nc">Mutex</span>::<span class="n">new</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">VecDeque</span>::<span class="n">new</span><span class="p">())),</span><span class="w">
+</span><span class="w">              </span><span class="n">cvar</span>: <span class="nc">Condvar</span>::<span class="n">new</span><span class="p">(),</span><span class="w">
+</span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">}</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>Our jobs are a Mutex wrapping an <code>Option&lt;VecDeque&gt;</code> of <code>Ipv4Addr</code>. As mentioned earlier, we represent our queue as an Option so that we could let our subscriber function know it can stop listening by switching the <code>Some(VecDeque)</code> for a <code>None</code> value.</p>
 <p>Next, our publish function - called here &ldquo;resolve_ips&rdquo; to convey more information in the code using our queue:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">resolve_ips</span>(<span style="color:#f92672">&amp;</span>self, unresolved_ips: Vec<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span>) {
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
-        <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Some(queue) <span style="color:#f92672">=</span> jobs.as_mut() {
-            queue.extend(unresolved_ips);
-            self.cvar.notify_all();
-        }
-    }
-</code></pre></div><p>Here, we receive a list of IPs, and then:</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">resolve_ips</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">unresolved_ips</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Ipv4Addr</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">jobs</span><span class="p">.</span><span class="n">lock</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="p">.</span><span class="n">as_mut</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">queue</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unresolved_ips</span><span class="p">);</span><span class="w">
+</span><span class="w">            </span><span class="bp">self</span><span class="p">.</span><span class="n">cvar</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>Here, we receive a list of IPs, and then:</p>
 <ol>
 <li>acquire an exclusive Mutex lock on the queue</li>
 <li>push the IPs onto the back of the <code>VecDeque</code></li>
@@ -224,18 +224,18 @@ In our case, we use it to protect the <code>Option&lt;VecDeque&gt;</code>. Here 
 <li>drop the mutex lock implicitly as the function goes out of scope</li>
 </ol>
 <p>Now, our subscribe function. Here, we call it &ldquo;wait_for_job&rdquo;:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">wait_for_job</span>(<span style="color:#f92672">&amp;</span>self) -&gt; Option<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span> {
-      <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
-      <span style="color:#66d9ef">loop</span> {
-          <span style="color:#66d9ef">match</span> jobs.as_mut()<span style="color:#f92672">?</span>.pop_front() {
-              Some(job) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">return</span> Some(job),
-              None <span style="color:#f92672">=&gt;</span> {
-                  jobs <span style="color:#f92672">=</span> self.cvar.wait(jobs).unwrap()
-              }
-          }
-      }
-  }
-</code></pre></div><p>This function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">  </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">wait_for_job</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Ipv4Addr</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">jobs</span><span class="p">.</span><span class="n">lock</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">      </span><span class="k">loop</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">          </span><span class="k">match</span><span class="w"> </span><span class="n">jobs</span><span class="p">.</span><span class="n">as_mut</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">pop_front</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="nb">Some</span><span class="p">(</span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">job</span><span class="p">),</span><span class="w">
+</span><span class="w">              </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                  </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">cvar</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">jobs</span><span class="p">).</span><span class="n">unwrap</span><span class="p">()</span><span class="w">
+</span><span class="w">              </span><span class="p">}</span><span class="w">
+</span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">}</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>This function:</p>
 <ol>
 <li>checks if the <code>Option&lt;VecDeque&gt;</code> contains a VecDeque or a None. If it contains a None, it returns it here: <code>jobs.as_mut()?</code> (<a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.as_mut"><code>as_mut</code></a> will return a None if that&rsquo;s what the <code>Option</code> contains).</li>
 <li>Then, if there&rsquo;s something in the queue, it returns it. Otherwise, it sleeps.</li>
@@ -243,88 +243,88 @@ In our case, we use it to protect the <code>Option&lt;VecDeque&gt;</code>. Here 
 <p>We sleep by moving our MutexGuard (jobs) into the Condvar and reassigning it to the Condvar&rsquo;s return value. The Condvar unlocks the guard, thus freeing it for writing. When it returns, we repeat this process, so that if it returned prematurely, we&rsquo;ll simply sleep again.</p>
 <p>We have to re-check our queue every time we wake up, because at times the <code>wait</code> function will return without actually being woken up, for more info check out the last paragraph in <a href="https://doc.rust-lang.org/std/sync/struct.Condvar.html#method.wait">the docs</a></p>
 <p>Finally, our cleanup function, called &ldquo;end&rdquo; in our case:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">end</span>(<span style="color:#f92672">&amp;</span>self) {
-      <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
-      <span style="color:#f92672">*</span>jobs <span style="color:#f92672">=</span> None;
-      self.cvar.notify_all();
-  }
-</code></pre></div><p>The end function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">  </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">end</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">jobs</span><span class="p">.</span><span class="n">lock</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">      </span><span class="o">*</span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
+</span><span class="w">      </span><span class="bp">self</span><span class="p">.</span><span class="n">cvar</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>The end function:</p>
 <ol>
 <li>acquires a lock on the <code>Mutex</code></li>
 <li>changes the <code>Option</code> inside the <code>Mutex</code> to <code>None</code></li>
 <li>sends a change notification through the Condvar</li>
 </ol>
 <h2 id="putting-it-all-together">Putting it all together</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">use</span> ::std::collections::VecDeque;
-  <span style="color:#66d9ef">use</span> ::std::net::Ipv4Addr;
-  <span style="color:#66d9ef">use</span> ::std::sync::{Condvar, Mutex};
-
-  <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">DnsQueue</span> {
-      jobs: <span style="color:#a6e22e">Mutex</span><span style="color:#f92672">&lt;</span>Option<span style="color:#f92672">&lt;</span>VecDeque<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;&gt;&gt;</span>,
-      cvar: <span style="color:#a6e22e">Condvar</span>,
-  }
-
-  <span style="color:#66d9ef">impl</span> DnsQueue {
-      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>() -&gt; <span style="color:#a6e22e">Self</span> {
-          DnsQueue {
-              jobs: <span style="color:#a6e22e">Mutex</span>::new(Some(VecDeque::new())),
-              cvar: <span style="color:#a6e22e">Condvar</span>::new(),
-          }
-      }
-  }
-
-  <span style="color:#66d9ef">impl</span> DnsQueue {
-      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">resolve_ips</span>(<span style="color:#f92672">&amp;</span>self, unresolved_ips: Vec<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span>) {
-          <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
-          <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Some(queue) <span style="color:#f92672">=</span> jobs.as_mut() {
-              queue.extend(unresolved_ips);
-              self.cvar.notify_all();
-          }
-      }
-      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">wait_for_job</span>(<span style="color:#f92672">&amp;</span>self) -&gt; Option<span style="color:#f92672">&lt;</span>Ipv4Addr<span style="color:#f92672">&gt;</span> {
-          <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
-          <span style="color:#66d9ef">loop</span> {
-              <span style="color:#66d9ef">match</span> jobs.as_mut()<span style="color:#f92672">?</span>.pop_front() {
-                  Some(job) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">return</span> Some(job),
-                  None <span style="color:#f92672">=&gt;</span> {
-                      jobs <span style="color:#f92672">=</span> self.cvar.wait(jobs).unwrap()
-                  }
-              }
-          }
-      }
-      <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">end</span>(<span style="color:#f92672">&amp;</span>self) {
-          <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> jobs <span style="color:#f92672">=</span> self.jobs.lock().unwrap();
-          <span style="color:#f92672">*</span>jobs <span style="color:#f92672">=</span> None;
-          self.cvar.notify_all();
-      }
-  }
-</code></pre></div><p>An example usage of our queue might be something like:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">  <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
-      <span style="color:#66d9ef">let</span> dns_queue <span style="color:#f92672">=</span> Arc::new(DnsQueue::new());
-      <span style="color:#66d9ef">let</span> dns_handler <span style="color:#f92672">=</span> thread::spawn({
-          <span style="color:#66d9ef">let</span> dns_queue <span style="color:#f92672">=</span> dns_queue.clone();
-          <span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
-              <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">let</span> Some(ip) <span style="color:#f92672">=</span> dns_queue.wait_for_job() {
-                  <span style="color:#75715e">// do something with ip here
-</span><span style="color:#75715e"></span>              }
-              <span style="color:#75715e">// we get here once we receive a None from the queue
-</span><span style="color:#75715e"></span>          }
-      });
-      
-      <span style="color:#66d9ef">let</span> some_other_thread_handler <span style="color:#f92672">=</span> thread::spawn({
-          <span style="color:#66d9ef">let</span> dns_queue <span style="color:#f92672">=</span> dns_queue.clone();
-          <span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
-              <span style="color:#75715e">// get `unresolved_ips: Vec&lt;Ipv4Addr&gt;` somehow...
-</span><span style="color:#75715e"></span>              dns_queue.resolve_ips(unresolved_ips);
-              <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>              dns_queue.end();
-          }
-      });
-      
-      some_other_thread_handler.join().unwrap();
-      dns_handler.join().unwrap();
-  }
-</code></pre></div><h2 id="finally">Finally</h2>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">  </span><span class="k">use</span><span class="w"> </span>::<span class="n">std</span>::<span class="n">collections</span>::<span class="n">VecDeque</span><span class="p">;</span><span class="w">
+</span><span class="w">  </span><span class="k">use</span><span class="w"> </span>::<span class="n">std</span>::<span class="n">net</span>::<span class="n">Ipv4Addr</span><span class="p">;</span><span class="w">
+</span><span class="w">  </span><span class="k">use</span><span class="w"> </span>::<span class="n">std</span>::<span class="n">sync</span>::<span class="p">{</span><span class="n">Condvar</span><span class="p">,</span><span class="w"> </span><span class="n">Mutex</span><span class="p">};</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="n">jobs</span>: <span class="nc">Mutex</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">VecDeque</span><span class="o">&lt;</span><span class="n">Ipv4Addr</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">      </span><span class="n">cvar</span>: <span class="nc">Condvar</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="k">impl</span><span class="w"> </span><span class="n">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">          </span><span class="n">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="n">jobs</span>: <span class="nc">Mutex</span>::<span class="n">new</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">VecDeque</span>::<span class="n">new</span><span class="p">())),</span><span class="w">
+</span><span class="w">              </span><span class="n">cvar</span>: <span class="nc">Condvar</span>::<span class="n">new</span><span class="p">(),</span><span class="w">
+</span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">}</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="k">impl</span><span class="w"> </span><span class="n">DnsQueue</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">resolve_ips</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">unresolved_ips</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Ipv4Addr</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">          </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">jobs</span><span class="p">.</span><span class="n">lock</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="p">.</span><span class="n">as_mut</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="n">queue</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unresolved_ips</span><span class="p">);</span><span class="w">
+</span><span class="w">              </span><span class="bp">self</span><span class="p">.</span><span class="n">cvar</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">wait_for_job</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Ipv4Addr</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">          </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">jobs</span><span class="p">.</span><span class="n">lock</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="k">loop</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="k">match</span><span class="w"> </span><span class="n">jobs</span><span class="p">.</span><span class="n">as_mut</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">pop_front</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                  </span><span class="nb">Some</span><span class="p">(</span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">job</span><span class="p">),</span><span class="w">
+</span><span class="w">                  </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                      </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">cvar</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">jobs</span><span class="p">).</span><span class="n">unwrap</span><span class="p">()</span><span class="w">
+</span><span class="w">                  </span><span class="p">}</span><span class="w">
+</span><span class="w">              </span><span class="p">}</span><span class="w">
+</span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">end</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">          </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">jobs</span><span class="p">.</span><span class="n">lock</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="o">*</span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
+</span><span class="w">          </span><span class="bp">self</span><span class="p">.</span><span class="n">cvar</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span><span class="w">
+</span><span class="w">      </span><span class="p">}</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>An example usage of our queue might be something like:</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">  </span><span class="k">fn</span> <span class="nf">main</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">      </span><span class="kd">let</span><span class="w"> </span><span class="n">dns_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span>::<span class="n">new</span><span class="p">(</span><span class="n">DnsQueue</span>::<span class="n">new</span><span class="p">());</span><span class="w">
+</span><span class="w">      </span><span class="kd">let</span><span class="w"> </span><span class="n">dns_handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">thread</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
+</span><span class="w">          </span><span class="kd">let</span><span class="w"> </span><span class="n">dns_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dns_queue</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="k">move</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="k">while</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dns_queue</span><span class="p">.</span><span class="n">wait_for_job</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                  </span><span class="c1">// do something with ip here
+</span><span class="c1"></span><span class="w">              </span><span class="p">}</span><span class="w">
+</span><span class="w">              </span><span class="c1">// we get here once we receive a None from the queue
+</span><span class="c1"></span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">});</span><span class="w">
+</span><span class="w">      
+</span><span class="w">      </span><span class="kd">let</span><span class="w"> </span><span class="n">some_other_thread_handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">thread</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
+</span><span class="w">          </span><span class="kd">let</span><span class="w"> </span><span class="n">dns_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dns_queue</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="k">move</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">              </span><span class="c1">// get `unresolved_ips: Vec&lt;Ipv4Addr&gt;` somehow...
+</span><span class="c1"></span><span class="w">              </span><span class="n">dns_queue</span><span class="p">.</span><span class="n">resolve_ips</span><span class="p">(</span><span class="n">unresolved_ips</span><span class="p">);</span><span class="w">
+</span><span class="w">              </span><span class="c1">// ...
+</span><span class="c1"></span><span class="w">              </span><span class="n">dns_queue</span><span class="p">.</span><span class="n">end</span><span class="p">();</span><span class="w">
+</span><span class="w">          </span><span class="p">}</span><span class="w">
+</span><span class="w">      </span><span class="p">});</span><span class="w">
+</span><span class="w">      
+</span><span class="w">      </span><span class="n">some_other_thread_handler</span><span class="p">.</span><span class="n">join</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">      </span><span class="n">dns_handler</span><span class="p">.</span><span class="n">join</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">  </span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id="finally">Finally</h2>
 <p>It&rsquo;s worth noting that our implementation uses a dns resolution queue of <code>Ipv4Addr</code>. This is the specific case of &ldquo;bandwhich&rdquo;, but this queue could also be used with a Generic <code>T</code> type instead of an <code>Ipv4Addr</code> for other uses.</p>
 <h2 id="credits">Credits</h2>
 <p>Thanks <a href="https://twitter.com/m_ou_se">Mara Bos</a> for the helpful comments.</p>

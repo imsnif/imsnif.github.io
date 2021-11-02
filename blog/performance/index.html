@@ -176,8 +176,9 @@ In simplified terms, it&rsquo;s an application running &ldquo;between&rdquo; you
 <p>We use a multi-threaded architecture, with each main thread performing a specific task and communicating with the other thread through an <a href="https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html">MPSC channel</a>. The data parsing and rendering flow we&rsquo;re discussing includes the <code>PTY thread</code> and the <code>Screen thread</code>.</p>
 <p>The <code>PTY thread</code> queries the <a href="https://man7.org/linux/man-pages/man7/pty.7.html">pty</a> which is our interface to the shell (or other program running inside the terminal), and sends the raw data to the <code>Screen thread</code>. That thread parses the data and builds up the internal state of the relevant terminal pane.</p>
 <p>Once in a while, the <code>PTY thread</code> decides it is time to render the state of the terminal to the user&rsquo;s screen and sends a <code>render</code> message to the screen thread.</p>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/TextPlugin.min.js"></script>
 <figure>
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -1303,33 +1304,33 @@ In addition to the <code>data</code> instructions it sends to the screen for par
 </ol>
 <p>The second instance is for reasons of user experience. This is so that if there are large amounts of data streaming from the pty, the user will see them updating on their screen in real time.</p>
 <p>Let&rsquo;s look at the code:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">task::spawn({
-    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">move</span> {
-        <span style="color:#75715e">// TerminalBytes is an asynchronous stream that polls the pty
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// and terminates when the pty is closed
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> terminal_bytes <span style="color:#f92672">=</span> TerminalBytes::new(pid);
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> last_render <span style="color:#f92672">=</span> Instant::now();
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> pending_render <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
-        <span style="color:#66d9ef">let</span> max_render_pause <span style="color:#f92672">=</span> Duration::from_millis(<span style="color:#ae81ff">30</span>);
-        <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">let</span> Some(bytes) <span style="color:#f92672">=</span> terminal_bytes.next().<span style="color:#66d9ef">await</span> {
-            <span style="color:#66d9ef">let</span> receiving_data <span style="color:#f92672">=</span> <span style="color:#f92672">!</span>bytes.is_empty();
-            <span style="color:#66d9ef">if</span> receiving_data {
-                send_data_to_screen(bytes);
-                pending_render <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
-            }
-            <span style="color:#66d9ef">if</span> pending_render <span style="color:#f92672">&amp;&amp;</span> last_render.elapsed() <span style="color:#f92672">&gt;</span> max_render_pause {
-                send_render_to_screen();
-                last_render <span style="color:#f92672">=</span> Instant::now();
-                pending_render <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
-            }
-            <span style="color:#66d9ef">if</span> <span style="color:#f92672">!</span>receiving_data {
-                <span style="color:#75715e">// wait a fixed amount of time before polling for more data
-</span><span style="color:#75715e"></span>                task::sleep(max_render_pause).<span style="color:#66d9ef">await</span>;
-            }
-        }
-    }
-})
-</code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/b20ac47d689a13cc894c3a10838cb8c2247a6e42/zellij-server/src/pty.rs#L170">the real world version</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="n">task</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
+</span><span class="w">    </span><span class="k">async</span><span class="w"> </span><span class="k">move</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="c1">// TerminalBytes is an asynchronous stream that polls the pty
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// and terminates when the pty is closed
+</span><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">terminal_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TerminalBytes</span>::<span class="n">new</span><span class="p">(</span><span class="n">pid</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">last_render</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Instant</span>::<span class="n">now</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">pending_render</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">max_render_pause</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Duration</span>::<span class="n">from_millis</span><span class="p">(</span><span class="mi">30</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">terminal_bytes</span><span class="p">.</span><span class="n">next</span><span class="p">().</span><span class="k">await</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="n">receiving_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">bytes</span><span class="p">.</span><span class="n">is_empty</span><span class="p">();</span><span class="w">
+</span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">receiving_data</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">send_data_to_screen</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span><span class="w">
+</span><span class="w">                </span><span class="n">pending_render</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">pending_render</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">last_render</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">max_render_pause</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">send_render_to_screen</span><span class="p">();</span><span class="w">
+</span><span class="w">                </span><span class="n">last_render</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Instant</span>::<span class="n">now</span><span class="p">();</span><span class="w">
+</span><span class="w">                </span><span class="n">pending_render</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="o">!</span><span class="n">receiving_data</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="c1">// wait a fixed amount of time before polling for more data
+</span><span class="c1"></span><span class="w">                </span><span class="n">task</span>::<span class="n">sleep</span><span class="p">(</span><span class="n">max_render_pause</span><span class="p">).</span><span class="k">await</span><span class="p">;</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">})</span><span class="w">
+</span></code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/b20ac47d689a13cc894c3a10838cb8c2247a6e42/zellij-server/src/pty.rs#L170">the real world version</a>.</p>
 <h1 id="troubleshooting-the-problem">Troubleshooting the problem</h1>
 <p>In order to measure the performance of this flow, we&rsquo;re going to run a <code>cat</code> on a file with 2,000,000 lines.
 We&rsquo;re going to use the excellent <a href="https://github.com/sharkdp/hyperfine"><code>hyperfine</code></a> benchmarking tool, making sure to use the <code>--show-output</code> flag in order to also measure stdout (which is what we&rsquo;re concerned with).
@@ -1343,8 +1344,9 @@ Range (min … max):   18.647 s … 19.803 s    10 runs
 </code></pre><p>Not great! Looks like we have something to aspire to.</p>
 <h2 id="first-problem-mpsc-channel-overflow">First problem: MPSC channel overflow</h2>
 <p>The first performance issue we have with this flow is with our MPSC channel overflowing. To visualize this, let&rsquo;s speed up the previous diagram a little:</p>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/TextPlugin.min.js"></script>
 <figure>
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
@@ -2906,41 +2908,42 @@ This affects performance in a few ways:</p>
 To do this, we switched the asynchronous channel to a bounded synchronous channel with a relatively small buffer (50 messages). We also switched our channels to <a href="https://docs.rs/crossbeam/0.7.3/crossbeam/channel/index.html"><code>crossbeam</code></a> which provided a <code>select!</code> macro that we found useful.</p>
 <p>Additionally, we removed our custom asynchronous stream implementation in favor of async_std&rsquo;s <a href="https://docs.rs/async-std/1.4.0/async_std/fs/struct.File.html"><code>File</code></a> to get an &ldquo;async i/o&rdquo; effect and not have to constantly poll in the background ourselves.</p>
 <p>Let&rsquo;s look at the changes in the code:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">task::spawn({
-    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">move</span> {
-        <span style="color:#66d9ef">let</span> render_pause <span style="color:#f92672">=</span> Duration::from_millis(<span style="color:#ae81ff">30</span>);
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> render_deadline <span style="color:#f92672">=</span> None;
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> buf <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span><span style="color:#66d9ef">u8</span>; <span style="color:#ae81ff">65536</span>];
-        <span style="color:#75715e">// AsyncFileReader is implemented using async_std&#39;s File
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> async_reader <span style="color:#f92672">=</span> AsyncFileReader::new(pid);
-
-        <span style="color:#75715e">// &#34;async_send_render_to_screen&#34; and &#34;async_send_data_to_screen&#34;
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// send to a crossbeam bounded channel
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// resolving once the send is successful, meaning there is room
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// for the message in the channel&#39;s buffer
-</span><span style="color:#75715e"></span>
-        <span style="color:#66d9ef">loop</span> {
-            <span style="color:#75715e">// deadline_read attempts to read from async_reader or times out
-</span><span style="color:#75715e"></span>            <span style="color:#75715e">// after the render_deadline has passed
-</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">match</span> deadline_read(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> async_reader, render_deadline, <span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> buf).<span style="color:#66d9ef">await</span> {
-                ReadResult::Ok(<span style="color:#ae81ff">0</span>) <span style="color:#f92672">|</span> ReadResult::Err(_) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">break</span>, <span style="color:#75715e">// EOF or error
-</span><span style="color:#75715e"></span>                ReadResult::Timeout <span style="color:#f92672">=&gt;</span> {
-                    async_send_render_to_screen(bytes).<span style="color:#66d9ef">await</span>;
-                    render_deadline <span style="color:#f92672">=</span> None;
-                }
-                ReadResult::Ok(n_bytes) <span style="color:#f92672">=&gt;</span> {
-                    <span style="color:#66d9ef">let</span> bytes <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>buf[..n_bytes];
-                    async_send_data_to_screen(bytes).<span style="color:#66d9ef">await</span>;
-                    render_deadline.get_or_insert(Instant::now() <span style="color:#f92672">+</span> render_pause);
-                }
-            }
-        }
-    }
-})
-</code></pre></div><p>And here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/8ccf3d61a02e8df8c45e70b230d4cf3266195f0b/zellij-server/src/pty.rs#L164">the real world version</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="n">task</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
+</span><span class="w">    </span><span class="k">async</span><span class="w"> </span><span class="k">move</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">render_pause</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Duration</span>::<span class="n">from_millis</span><span class="p">(</span><span class="mi">30</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">render_deadline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="k">u8</span><span class="p">;</span><span class="w"> </span><span class="mi">65536</span><span class="p">];</span><span class="w">
+</span><span class="w">        </span><span class="c1">// AsyncFileReader is implemented using async_std&#39;s File
+</span><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">async_reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AsyncFileReader</span>::<span class="n">new</span><span class="p">(</span><span class="n">pid</span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w">        </span><span class="c1">// &#34;async_send_render_to_screen&#34; and &#34;async_send_data_to_screen&#34;
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// send to a crossbeam bounded channel
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// resolving once the send is successful, meaning there is room
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// for the message in the channel&#39;s buffer
+</span><span class="c1"></span><span class="w">
+</span><span class="w">        </span><span class="k">loop</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="c1">// deadline_read attempts to read from async_reader or times out
+</span><span class="c1"></span><span class="w">            </span><span class="c1">// after the render_deadline has passed
+</span><span class="c1"></span><span class="w">            </span><span class="k">match</span><span class="w"> </span><span class="n">deadline_read</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">async_reader</span><span class="p">,</span><span class="w"> </span><span class="n">render_deadline</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">buf</span><span class="p">).</span><span class="k">await</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">ReadResult</span>::<span class="nb">Ok</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">ReadResult</span>::<span class="nb">Err</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">break</span><span class="p">,</span><span class="w"> </span><span class="c1">// EOF or error
+</span><span class="c1"></span><span class="w">                </span><span class="n">ReadResult</span>::<span class="n">Timeout</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                    </span><span class="n">async_send_render_to_screen</span><span class="p">(</span><span class="n">bytes</span><span class="p">).</span><span class="k">await</span><span class="p">;</span><span class="w">
+</span><span class="w">                    </span><span class="n">render_deadline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
+</span><span class="w">                </span><span class="p">}</span><span class="w">
+</span><span class="w">                </span><span class="n">ReadResult</span>::<span class="nb">Ok</span><span class="p">(</span><span class="n">n_bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                    </span><span class="kd">let</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">buf</span><span class="p">[..</span><span class="n">n_bytes</span><span class="p">];</span><span class="w">
+</span><span class="w">                    </span><span class="n">async_send_data_to_screen</span><span class="p">(</span><span class="n">bytes</span><span class="p">).</span><span class="k">await</span><span class="p">;</span><span class="w">
+</span><span class="w">                    </span><span class="n">render_deadline</span><span class="p">.</span><span class="n">get_or_insert</span><span class="p">(</span><span class="n">Instant</span>::<span class="n">now</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">render_pause</span><span class="p">);</span><span class="w">
+</span><span class="w">                </span><span class="p">}</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">})</span><span class="w">
+</span></code></pre></div><p>And here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/8ccf3d61a02e8df8c45e70b230d4cf3266195f0b/zellij-server/src/pty.rs#L164">the real world version</a>.</p>
 <p>So here is more or less what things look like afterwards:</p>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/TextPlugin.min.js"></script>
 <figure>
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
@@ -4982,166 +4985,166 @@ Range (min … max):    5.526 s …  5.678 s    10 runs
 <h3 id="data-parsing-faster">Data parsing faster</h3>
 <p>The data parsing part of the screen thread has the role of taking ANSI/VT instructions (eg. <code>\033[10;2H\033[36mHi there!</code>) and turning them into a data structure that can be controlled by Zellij.</p>
 <p>Here&rsquo;s the relevant parts of these data structures:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Grid</span> {
-    viewport: Vec<span style="color:#f92672">&lt;</span>Row<span style="color:#f92672">&gt;</span>,
-    cursor: <span style="color:#a6e22e">Cursor</span>,
-    width: <span style="color:#66d9ef">usize</span>,
-    height: <span style="color:#66d9ef">usize</span>,
-}
-
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Row</span> {
-    columns: Vec<span style="color:#f92672">&lt;</span>TerminalCharacter<span style="color:#f92672">&gt;</span>,
-}
-
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Cursor</span> {
-    x: <span style="color:#66d9ef">usize</span>,
-    y: <span style="color:#66d9ef">usize</span>
-}
-
-<span style="color:#75715e">#[derive(Clone, Copy)]</span>
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">TerminalCharacter</span> {
-    character: <span style="color:#a6e22e">char</span>,
-    styles: <span style="color:#a6e22e">CharacterStyles</span>
-}
-</code></pre></div><p>The real world version can be found <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs">here</a> and <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/terminal_character.rs">here</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">struct</span> <span class="nc">Grid</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">viewport</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Row</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">cursor</span>: <span class="nc">Cursor</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">width</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">height</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">columns</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TerminalCharacter</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Cursor</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">x</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">y</span>: <span class="kt">usize</span>
+<span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Clone, Copy)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">TerminalCharacter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">character</span>: <span class="nc">char</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">styles</span>: <span class="nc">CharacterStyles</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>The real world version can be found <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs">here</a> and <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/terminal_character.rs">here</a>.</p>
 <h4 id="preallocating-rows">Preallocating rows</h4>
 <p>While the full role of the parser and all the past and future optimizations therein are out of scope for this post, I&rsquo;d like to go into a couple of optimizations that we made at this point in time that were quite significant after the pipeline improvements above.</p>
 <p>Let&rsquo;s start by looking at <code>Row</code> and how we add characters to it. This is one of the most frequent actions the parser performs. Especially adding characters at the end of the row.
 This action mainly involves pushing those <code>TerminalCharacter</code>s into the <code>columns</code> vector of the row. Each such push involves a heap allocation to resize the vector<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>, which is an expensive operation performance-wise. We could gain some performance by preallocating the columns vector every time we create a row or resize the terminal pane.</p>
 <p>So we change the Row&rsquo;s constructor from this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="color:#66d9ef">impl</span> Row {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>() -&gt; <span style="color:#a6e22e">Self</span> {
-        Row {
-            columns: Vec::new(),
-        }
-    }}
-}
-</code></pre></div><p>To this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="color:#66d9ef">impl</span> Row {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>(width: <span style="color:#66d9ef">usize</span>) -&gt; <span style="color:#a6e22e">Self</span> {
-        Row {
-            columns: Vec::with_capacity(width),
-        }
-    }}
-}
-</code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs#L1861">the real world version</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">columns</span>: <span class="nb">Vec</span>::<span class="n">new</span><span class="p">(),</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>To this:</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">width</span>: <span class="kt">usize</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">columns</span>: <span class="nb">Vec</span>::<span class="n">with_capacity</span><span class="p">(</span><span class="n">width</span><span class="p">),</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs#L1861">the real world version</a>.</p>
 <h4 id="caching-character-widths">Caching character widths</h4>
 <p>Some characters take up more space than others. Examples of such characters are East Asian letters or emoji. Zellij uses the excellent <a href="https://crates.io/crates/unicode-width">unicode-width</a> crate to figure out the width of each character.</p>
 <p>When adding characters to a line, a terminal emulator needs to know the current width of the line in order to decide if it should line wrap the character to the next line or not.
 So it needs to constantly be looking at and adding up the widths of the previous characters in the line.</p>
 <p>Since we need to find the width of a single character many times, we could gain some speed by caching the result of calling <code>c.width()</code> on the <code>TerminalCharacter</code> struct.</p>
 <p>So then this function (for example):</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
-<span style="color:#75715e">#[derive(Clone, Copy)]</span>
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">TerminalCharacter</span> {
-    character: <span style="color:#a6e22e">char</span>,
-    styles: <span style="color:#a6e22e">CharacterStyles</span>
-}
-
-<span style="color:#66d9ef">impl</span> Row {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">width</span>(<span style="color:#f92672">&amp;</span>self) -&gt; <span style="color:#66d9ef">usize</span> {
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> width <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-        <span style="color:#66d9ef">for</span> terminal_character <span style="color:#66d9ef">in</span> self.columns.iter() {
-            width <span style="color:#f92672">+=</span> terminal_character.character.width();
-        }
-        width
-    }
-}
-</code></pre></div><p>Becomes much faster with caching as:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
-<span style="color:#75715e">#[derive(Clone, Copy)]</span>
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">TerminalCharacter</span> {
-    character: <span style="color:#a6e22e">char</span>,
-    styles: <span style="color:#a6e22e">CharacterStyles</span>,
-    width: <span style="color:#66d9ef">usize</span>,
-}
-
-<span style="color:#66d9ef">impl</span> Row {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">width</span>(<span style="color:#f92672">&amp;</span>self) -&gt; <span style="color:#66d9ef">usize</span> {
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> width <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-        <span style="color:#66d9ef">for</span> terminal_character <span style="color:#66d9ef">in</span> self.columns.iter() {
-            width <span style="color:#f92672">+=</span> terminal_character.width;
-        }
-        width
-    }
-}
-</code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs#L1892">the real world version</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Clone, Copy)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">TerminalCharacter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">character</span>: <span class="nc">char</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">styles</span>: <span class="nc">CharacterStyles</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">width</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">usize</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">terminal_character</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">columns</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">width</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">terminal_character</span><span class="p">.</span><span class="n">character</span><span class="p">.</span><span class="n">width</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="n">width</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>Becomes much faster with caching as:</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Clone, Copy)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">TerminalCharacter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">character</span>: <span class="nc">char</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">styles</span>: <span class="nc">CharacterStyles</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">width</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">width</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">usize</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">terminal_character</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">columns</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">width</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">terminal_character</span><span class="p">.</span><span class="n">width</span><span class="p">;</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="n">width</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs#L1892">the real world version</a>.</p>
 <h3 id="rendering-faster">Rendering faster</h3>
 <p>The rendering part of the Screen thread essentially does the opposite action of the data parsing part. It takes the state of each pane, represented by the data structures described above, and turns it into ANSI/VT instructions to be sent to and interpreted by the user&rsquo;s own terminal emulator.</p>
 <p>The <code>render</code> loops over the viewport in the <code>Grid</code>, turning all the characters into ANSI/VT instructions that represent their style and location and sends them to the user&rsquo;s terminal, there to replace what was previously placed there in the previous render.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">render</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self) -&gt; String {
-    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> vte_output <span style="color:#f92672">=</span> String::new();
-    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> character_styles <span style="color:#f92672">=</span> CharacterStyles::new();
-    <span style="color:#66d9ef">let</span> x <span style="color:#f92672">=</span> self.get_x();
-    <span style="color:#66d9ef">let</span> y <span style="color:#f92672">=</span> self.get_y();
-    <span style="color:#66d9ef">for</span> (line_index, line) <span style="color:#66d9ef">in</span> grid.viewport.iter().enumerate() {
-        vte_output.push_str(
-            <span style="color:#75715e">// goto row/col and reset styles
-</span><span style="color:#75715e"></span>            <span style="color:#f92672">&amp;</span>format<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;\u{1b}[{};{}H\u{1b}[m&#34;</span>, y <span style="color:#f92672">+</span> line_index <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, x <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)
-        );
-        <span style="color:#66d9ef">for</span> (col, t_character) <span style="color:#66d9ef">in</span> line.iter().enumerate() {
-            <span style="color:#66d9ef">let</span> styles_diff <span style="color:#f92672">=</span> character_styles
-                .update_and_return_diff(<span style="color:#f92672">&amp;</span>t_character.styles);
-            <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Some(new_styles) <span style="color:#f92672">=</span> styles_diff {
-                <span style="color:#75715e">// if this character&#39;s styles are different
-</span><span style="color:#75715e"></span>                <span style="color:#75715e">// from the previous, we update the diff here
-</span><span style="color:#75715e"></span>                vte_output.push_str(<span style="color:#f92672">&amp;</span>new_styles);
-            }
-            vte_output.push(t_character.character);
-        }
-        <span style="color:#75715e">// we clear the character styles after each line
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// in order not to leak styles from the pane to our left
-</span><span style="color:#75715e"></span>        character_styles.clear();
-    }
-    vte_output
-}
-</code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/4b7fe3ca7b095968bd34b24949de790a4d8af28e/zellij-server/src/panes/terminal_pane.rs#L153">the real world version</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">render</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">String</span> <span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">vte_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">character_styles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CharacterStyles</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">get_x</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">get_y</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">line_index</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">viewport</span><span class="p">.</span><span class="n">iter</span><span class="p">().</span><span class="n">enumerate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">vte_output</span><span class="p">.</span><span class="n">push_str</span><span class="p">(</span><span class="w">
+</span><span class="w">            </span><span class="c1">// goto row/col and reset styles
+</span><span class="c1"></span><span class="w">            </span><span class="o">&amp;</span><span class="n">format</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[{};{}H\u{1b}[m&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">line_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="w">        </span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="n">t_character</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">line</span><span class="p">.</span><span class="n">iter</span><span class="p">().</span><span class="n">enumerate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="n">styles_diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">character_styles</span><span class="w">
+</span><span class="w">                </span><span class="p">.</span><span class="n">update_and_return_diff</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t_character</span><span class="p">.</span><span class="n">styles</span><span class="p">);</span><span class="w">
+</span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">new_styles</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">styles_diff</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="c1">// if this character&#39;s styles are different
+</span><span class="c1"></span><span class="w">                </span><span class="c1">// from the previous, we update the diff here
+</span><span class="c1"></span><span class="w">                </span><span class="n">vte_output</span><span class="p">.</span><span class="n">push_str</span><span class="p">(</span><span class="o">&amp;</span><span class="n">new_styles</span><span class="p">);</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">            </span><span class="n">vte_output</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">t_character</span><span class="p">.</span><span class="n">character</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="c1">// we clear the character styles after each line
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// in order not to leak styles from the pane to our left
+</span><span class="c1"></span><span class="w">        </span><span class="n">character_styles</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="n">vte_output</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/4b7fe3ca7b095968bd34b24949de790a4d8af28e/zellij-server/src/panes/terminal_pane.rs#L153">the real world version</a>.</p>
 <p>Writing to STDOUT is a costly operation. We can improve our performance by limiting the amount of instructions we write to the user&rsquo;s terminal.
 In order to do this, we create an output buffer. This buffer essentially keeps track of the parts of the viewport that have changed since the last render. Then when we render, we cherry pick those changed parts from the <code>Grid</code> and send only them to stdout.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="color:#75715e">#[derive(Debug)]</span>
-<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">CharacterChunk</span> {
-    <span style="color:#66d9ef">pub</span> terminal_characters: Vec<span style="color:#f92672">&lt;</span>TerminalCharacter<span style="color:#f92672">&gt;</span>,
-    <span style="color:#66d9ef">pub</span> x: <span style="color:#66d9ef">usize</span>,
-    <span style="color:#66d9ef">pub</span> y: <span style="color:#66d9ef">usize</span>,
-}
-
-<span style="color:#75715e">#[derive(Clone, Debug)]</span>
-<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">OutputBuffer</span> {
-    changed_lines: Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">usize</span><span style="color:#f92672">&gt;</span>, <span style="color:#75715e">// line index
-</span><span style="color:#75715e"></span>    should_update_all_lines: <span style="color:#66d9ef">bool</span>,
-}
-
-<span style="color:#66d9ef">impl</span> OutputBuffer {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">update_line</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self, line_index: <span style="color:#66d9ef">usize</span>) {
-        self.changed_lines.push(line_index);
-    }
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">clear</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self) {
-        self.changed_lines.clear();
-    }
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">changed_chunks_in_viewport</span>(
-        <span style="color:#f92672">&amp;</span>self,
-        viewport: <span style="color:#66d9ef">&amp;</span>[Row],
-    ) -&gt; Vec<span style="color:#f92672">&lt;</span>CharacterChunk<span style="color:#f92672">&gt;</span> {
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> line_changes <span style="color:#f92672">=</span> self.changed_lines.to_vec();
-        line_changes.sort_unstable();
-        line_changes.dedup();
-        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> changed_chunks <span style="color:#f92672">=</span> Vec::with_capacity(line_changes.len());
-        <span style="color:#66d9ef">for</span> line_index <span style="color:#66d9ef">in</span> line_changes {
-            <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> terminal_characters: Vec<span style="color:#f92672">&lt;</span>TerminalCharacter<span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> viewport
-                .get(line_index).unwrap().columns
-                .iter()
-                .copied()
-                .collect();
-            changed_chunks.push(CharacterChunk {
-                x: <span style="color:#ae81ff">0</span>,
-                y: <span style="color:#a6e22e">line_index</span>,
-                terminal_characters,
-            });
-        }
-        changed_chunks
-    }
-}}
-</code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs#L204">the real world version</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="cp">#[derive(Debug)]</span><span class="w">
+</span><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">CharacterChunk</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">terminal_characters</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TerminalCharacter</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">x</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">y</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Clone, Debug)]</span><span class="w">
+</span><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">OutputBuffer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">changed_lines</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="c1">// line index
+</span><span class="c1"></span><span class="w">    </span><span class="n">should_update_all_lines</span>: <span class="kt">bool</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">OutputBuffer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">update_line</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">line_index</span>: <span class="kt">usize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">changed_lines</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">line_index</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">clear</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">changed_lines</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">changed_chunks_in_viewport</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">viewport</span>: <span class="kp">&amp;</span><span class="p">[</span><span class="n">Row</span><span class="p">],</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">CharacterChunk</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">line_changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">changed_lines</span><span class="p">.</span><span class="n">to_vec</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="n">line_changes</span><span class="p">.</span><span class="n">sort_unstable</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="n">line_changes</span><span class="p">.</span><span class="n">dedup</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">changed_chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span>::<span class="n">with_capacity</span><span class="p">(</span><span class="n">line_changes</span><span class="p">.</span><span class="n">len</span><span class="p">());</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">line_index</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">line_changes</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">terminal_characters</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TerminalCharacter</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewport</span><span class="w">
+</span><span class="w">                </span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">line_index</span><span class="p">).</span><span class="n">unwrap</span><span class="p">().</span><span class="n">columns</span><span class="w">
+</span><span class="w">                </span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w">
+</span><span class="w">                </span><span class="p">.</span><span class="n">copied</span><span class="p">()</span><span class="w">
+</span><span class="w">                </span><span class="p">.</span><span class="n">collect</span><span class="p">();</span><span class="w">
+</span><span class="w">            </span><span class="n">changed_chunks</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">CharacterChunk</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">x</span>: <span class="mi">0</span><span class="p">,</span><span class="w">
+</span><span class="w">                </span><span class="n">y</span>: <span class="nc">line_index</span><span class="p">,</span><span class="w">
+</span><span class="w">                </span><span class="n">terminal_characters</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="p">});</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="n">changed_chunks</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}}</span><span class="w">
+</span></code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs#L204">the real world version</a>.</p>
 <p>The current implementation only deals with full line changes. It can be further optimized to only send the part or parts of a line that changed, but when attempting that I found that it increases the complexity significantly without providing a very significant gain in performance.</p>
 <p>So, let&rsquo;s look at the performance we&rsquo;ve gained after all these improvements:</p>
 <p>The results of running <code>hyperfine --show-output &quot;cat /tmp/bigfile&quot;</code> after the fixes: (pane size: 59 lines, 104 cols)</p>
