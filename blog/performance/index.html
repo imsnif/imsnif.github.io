@@ -9,29 +9,29 @@
 <meta name="description" content="A writeup of our journey to improve the performance of Zellij"/>
 <meta name="keywords" content="Rust, Rustlang, terminal, zellij, performance"/>
 <meta name="robots" content="noodp"/>
-<link rel="canonical" href="/blog/performance/" />
+<link rel="canonical" href="https://www.poor.dev/blog/performance/" />
 
-<link rel="stylesheet" href="/style.css">
-
-
-<link rel="stylesheet" href="/assets/style.css">
-
-  <link rel="stylesheet" href="/assets/green.css">
+<link rel="stylesheet" href="https://www.poor.dev/style.css">
 
 
+<link rel="stylesheet" href="https://www.poor.dev/assets/style.css">
+
+  <link rel="stylesheet" href="https://www.poor.dev/assets/green.css">
 
 
 
-<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/apple-touch-icon-144-precomposed.png">
 
-<link rel="shortcut icon" href="/favicon.ico">
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://www.poor.dev/img/apple-touch-icon-144-precomposed.png">
+
+<link rel="shortcut icon" href="https://www.poor.dev/favicon.ico">
 
 
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="How we improved the performance of our Rust app " />
 <meta name="twitter:description" content="A writeup of our journey to improve the performance of Zellij" />
-<meta name="twitter:site" content="/" />
+<meta name="twitter:site" content="https://www.poor.dev/" />
 <meta name="twitter:creator" content="Aram Drevekenin" />
 <meta name="twitter:image" content="https://www.poor.dev/img/performance/cover.png">
 <meta name="twitter:image:alt" content="A writeup of our journey to improve the performance of Zellij">
@@ -43,7 +43,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:title" content="How we improved the performance of our Rust app ">
 <meta property="og:description" content="A writeup of our journey to improve the performance of Zellij" />
-<meta property="og:url" content="/blog/performance/" />
+<meta property="og:url" content="https://www.poor.dev/blog/performance/" />
 <meta property="og:site_name" content="How we improved the performance of our Rust app" />
 <meta property="og:image" content="https://www.poor.dev/img/performance/cover.png">
 <meta property="og:image:width" content="1200">
@@ -137,7 +137,7 @@
     
 <div class="post">
   <h1 class="post-title">
-    <a href="/blog/performance/">How we improved the performance of our Rust app</a></h1>
+    <a href="https://www.poor.dev/blog/performance/">How we improved the performance of our Rust app</a></h1>
   <div class="post-meta">
       
     <span class="post-date">
@@ -1304,7 +1304,7 @@ In addition to the <code>data</code> instructions it sends to the screen for par
 </ol>
 <p>The second instance is for reasons of user experience. This is so that if there are large amounts of data streaming from the pty, the user will see them updating on their screen in real time.</p>
 <p>Let&rsquo;s look at the code:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="n">task</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="n">task</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
 </span><span class="w">    </span><span class="k">async</span><span class="w"> </span><span class="k">move</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="c1">// TerminalBytes is an asynchronous stream that polls the pty
 </span><span class="c1"></span><span class="w">        </span><span class="c1">// and terminates when the pty is closed
@@ -1336,10 +1336,10 @@ In addition to the <code>data</code> instructions it sends to the screen for par
 We&rsquo;re going to use the excellent <a href="https://github.com/sharkdp/hyperfine"><code>hyperfine</code></a> benchmarking tool, making sure to use the <code>--show-output</code> flag in order to also measure stdout (which is what we&rsquo;re concerned with).
 A fair comparison would be to use <a href="https://github.com/tmux/tmux"><code>tmux</code></a> - a very stable and established terminal multiplexer.</p>
 <p>The results of running <code>hyperfine --show-output &quot;cat /tmp/bigfile&quot;</code> inside tmux: (pane size: 59 lines, 104 cols)</p>
-<pre><code>Time (mean ± σ):      5.593 s ±  0.055 s    [User: 1.3 ms, System: 2260.6 ms]
+<pre tabindex="0"><code>Time (mean ± σ):      5.593 s ±  0.055 s    [User: 1.3 ms, System: 2260.6 ms]
 Range (min … max):    5.526 s …  5.678 s    10 runs
 </code></pre><p>The results of running <code>hyperfine --show-output &quot;cat /tmp/bigfile&quot;</code> inside Zellij: (pane size: 59 lines, 104 cols)</p>
-<pre><code>Time (mean ± σ):     19.175 s ±  0.347 s    [User: 4.5 ms, System: 2754.7 ms]
+<pre tabindex="0"><code>Time (mean ± σ):     19.175 s ±  0.347 s    [User: 4.5 ms, System: 2754.7 ms]
 Range (min … max):   18.647 s … 19.803 s    10 runs
 </code></pre><p>Not great! Looks like we have something to aspire to.</p>
 <h2 id="first-problem-mpsc-channel-overflow">First problem: MPSC channel overflow</h2>
@@ -2908,7 +2908,7 @@ This affects performance in a few ways:</p>
 To do this, we switched the asynchronous channel to a bounded synchronous channel with a relatively small buffer (50 messages). We also switched our channels to <a href="https://docs.rs/crossbeam/0.7.3/crossbeam/channel/index.html"><code>crossbeam</code></a> which provided a <code>select!</code> macro that we found useful.</p>
 <p>Additionally, we removed our custom asynchronous stream implementation in favor of async_std&rsquo;s <a href="https://docs.rs/async-std/1.4.0/async_std/fs/struct.File.html"><code>File</code></a> to get an &ldquo;async i/o&rdquo; effect and not have to constantly poll in the background ourselves.</p>
 <p>Let&rsquo;s look at the changes in the code:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="n">task</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="n">task</span>::<span class="n">spawn</span><span class="p">({</span><span class="w">
 </span><span class="w">    </span><span class="k">async</span><span class="w"> </span><span class="k">move</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">render_pause</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Duration</span>::<span class="n">from_millis</span><span class="p">(</span><span class="mi">30</span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">render_deadline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
@@ -2931,7 +2931,7 @@ To do this, we switched the asynchronous channel to a bounded synchronous channe
 </span><span class="w">                    </span><span class="n">render_deadline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
 </span><span class="w">                </span><span class="p">}</span><span class="w">
 </span><span class="w">                </span><span class="n">ReadResult</span>::<span class="nb">Ok</span><span class="p">(</span><span class="n">n_bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">                    </span><span class="kd">let</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">buf</span><span class="p">[..</span><span class="n">n_bytes</span><span class="p">];</span><span class="w">
+</span><span class="w">                    </span><span class="kd">let</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">buf</span><span class="p">[</span><span class="o">..</span><span class="n">n_bytes</span><span class="p">];</span><span class="w">
 </span><span class="w">                    </span><span class="n">async_send_data_to_screen</span><span class="p">(</span><span class="n">bytes</span><span class="p">).</span><span class="k">await</span><span class="p">;</span><span class="w">
 </span><span class="w">                    </span><span class="n">render_deadline</span><span class="p">.</span><span class="n">get_or_insert</span><span class="p">(</span><span class="n">Instant</span>::<span class="n">now</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">render_pause</span><span class="p">);</span><span class="w">
 </span><span class="w">                </span><span class="p">}</span><span class="w">
@@ -4968,7 +4968,7 @@ To do this, we switched the asynchronous channel to a bounded synchronous channe
 <h3 id="measuring-the-performance-improvements">Measuring the performance improvements</h3>
 <p>Let&rsquo;s come back to our initial performance test.</p>
 <p>Here are the numbers when running <code>hyperfine --show-output &quot;cat /tmp/bigfile&quot;</code> (pane size: 59 lines, 104 cols):</p>
-<pre><code># Zellij before this fix
+<pre tabindex="0"><code># Zellij before this fix
 Time (mean ± σ):     19.175 s ±  0.347 s    [User: 4.5 ms, System: 2754.7 ms]
 Range (min … max):   18.647 s … 19.803 s    10 runs
 
@@ -4985,7 +4985,7 @@ Range (min … max):    5.526 s …  5.678 s    10 runs
 <h3 id="data-parsing-faster">Data parsing faster</h3>
 <p>The data parsing part of the screen thread has the role of taking ANSI/VT instructions (eg. <code>\033[10;2H\033[36mHi there!</code>) and turning them into a data structure that can be controlled by Zellij.</p>
 <p>Here&rsquo;s the relevant parts of these data structures:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">struct</span> <span class="nc">Grid</span><span class="w"> </span><span class="p">{</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">struct</span> <span class="nc">Grid</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="n">viewport</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Row</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="n">cursor</span>: <span class="nc">Cursor</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="n">width</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
@@ -5003,7 +5003,7 @@ Range (min … max):    5.526 s …  5.678 s    10 runs
 </span><span class="w">
 </span><span class="w"></span><span class="cp">#[derive(Clone, Copy)]</span><span class="w">
 </span><span class="w"></span><span class="k">struct</span> <span class="nc">TerminalCharacter</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">    </span><span class="n">character</span>: <span class="nc">char</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">character</span>: <span class="kt">char</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="n">styles</span>: <span class="nc">CharacterStyles</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span></code></pre></div><p>The real world version can be found <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/grid.rs">here</a> and <a href="https://github.com/zellij-org/zellij/blob/50d049a0edd2b342b4c6e9e279d0be77c2c5398d/zellij-server/src/panes/terminal_character.rs">here</a>.</p>
@@ -5012,7 +5012,7 @@ Range (min … max):    5.526 s …  5.678 s    10 runs
 <p>Let&rsquo;s start by looking at <code>Row</code> and how we add characters to it. This is one of the most frequent actions the parser performs. Especially adding characters at the end of the row.
 This action mainly involves pushing those <code>TerminalCharacter</code>s into the <code>columns</code> vector of the row. Each such push involves a heap allocation to resize the vector<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>, which is an expensive operation performance-wise. We could gain some performance by preallocating the columns vector every time we create a row or resize the terminal pane.</p>
 <p>So we change the Row&rsquo;s constructor from this:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">            </span><span class="n">columns</span>: <span class="nb">Vec</span>::<span class="n">new</span><span class="p">(),</span><span class="w">
@@ -5020,7 +5020,7 @@ This action mainly involves pushing those <code>TerminalCharacter</code>s into t
 </span><span class="w">    </span><span class="p">}}</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span></code></pre></div><p>To this:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="w"> </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">width</span>: <span class="kt">usize</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">            </span><span class="n">columns</span>: <span class="nb">Vec</span>::<span class="n">with_capacity</span><span class="p">(</span><span class="n">width</span><span class="p">),</span><span class="w">
@@ -5034,10 +5034,10 @@ This action mainly involves pushing those <code>TerminalCharacter</code>s into t
 So it needs to constantly be looking at and adding up the widths of the previous characters in the line.</p>
 <p>Since we need to find the width of a single character many times, we could gain some speed by caching the result of calling <code>c.width()</code> on the <code>TerminalCharacter</code> struct.</p>
 <p>So then this function (for example):</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
 </span><span class="w"></span><span class="cp">#[derive(Clone, Copy)]</span><span class="w">
 </span><span class="w"></span><span class="k">struct</span> <span class="nc">TerminalCharacter</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">    </span><span class="n">character</span>: <span class="nc">char</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">character</span>: <span class="kt">char</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="n">styles</span>: <span class="nc">CharacterStyles</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span><span class="w">
@@ -5051,10 +5051,10 @@ So it needs to constantly be looking at and adding up the widths of the previous
 </span><span class="w">    </span><span class="p">}</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span></code></pre></div><p>Becomes much faster with caching as:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
 </span><span class="w"></span><span class="cp">#[derive(Clone, Copy)]</span><span class="w">
 </span><span class="w"></span><span class="k">struct</span> <span class="nc">TerminalCharacter</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">    </span><span class="n">character</span>: <span class="nc">char</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">character</span>: <span class="kt">char</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="n">styles</span>: <span class="nc">CharacterStyles</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="n">width</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
@@ -5072,7 +5072,7 @@ So it needs to constantly be looking at and adding up the widths of the previous
 <h3 id="rendering-faster">Rendering faster</h3>
 <p>The rendering part of the Screen thread essentially does the opposite action of the data parsing part. It takes the state of each pane, represented by the data structures described above, and turns it into ANSI/VT instructions to be sent to and interpreted by the user&rsquo;s own terminal emulator.</p>
 <p>The <code>render</code> loops over the viewport in the <code>Grid</code>, turning all the characters into ANSI/VT instructions that represent their style and location and sends them to the user&rsquo;s terminal, there to replace what was previously placed there in the previous render.</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">render</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">String</span> <span class="p">{</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">render</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">String</span> <span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">vte_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">new</span><span class="p">();</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">character_styles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CharacterStyles</span>::<span class="n">new</span><span class="p">();</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">get_x</span><span class="p">();</span><span class="w">
@@ -5080,7 +5080,7 @@ So it needs to constantly be looking at and adding up the widths of the previous
 </span><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">line_index</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">viewport</span><span class="p">.</span><span class="n">iter</span><span class="p">().</span><span class="n">enumerate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="n">vte_output</span><span class="p">.</span><span class="n">push_str</span><span class="p">(</span><span class="w">
 </span><span class="w">            </span><span class="c1">// goto row/col and reset styles
-</span><span class="c1"></span><span class="w">            </span><span class="o">&amp;</span><span class="n">format</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[{};{}H\u{1b}[m&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">line_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="c1"></span><span class="w">            </span><span class="o">&amp;</span><span class="fm">format!</span><span class="p">(</span><span class="s">&#34;\u{1b}[{};{}H\u{1b}[m&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">line_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
 </span><span class="w">        </span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="n">t_character</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">line</span><span class="p">.</span><span class="n">iter</span><span class="p">().</span><span class="n">enumerate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="n">styles_diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">character_styles</span><span class="w">
@@ -5101,7 +5101,7 @@ So it needs to constantly be looking at and adding up the widths of the previous
 </span></code></pre></div><p>Here&rsquo;s <a href="https://github.com/zellij-org/zellij/blob/4b7fe3ca7b095968bd34b24949de790a4d8af28e/zellij-server/src/panes/terminal_pane.rs#L153">the real world version</a>.</p>
 <p>Writing to STDOUT is a costly operation. We can improve our performance by limiting the amount of instructions we write to the user&rsquo;s terminal.
 In order to do this, we create an output buffer. This buffer essentially keeps track of the parts of the viewport that have changed since the last render. Then when we render, we cherry pick those changed parts from the <code>Grid</code> and send only them to stdout.</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="cp">#[derive(Debug)]</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="cp">#[derive(Debug)]</span><span class="w">
 </span><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">CharacterChunk</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">terminal_characters</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TerminalCharacter</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">x</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
@@ -5148,7 +5148,7 @@ In order to do this, we create an output buffer. This buffer essentially keeps t
 <p>The current implementation only deals with full line changes. It can be further optimized to only send the part or parts of a line that changed, but when attempting that I found that it increases the complexity significantly without providing a very significant gain in performance.</p>
 <p>So, let&rsquo;s look at the performance we&rsquo;ve gained after all these improvements:</p>
 <p>The results of running <code>hyperfine --show-output &quot;cat /tmp/bigfile&quot;</code> after the fixes: (pane size: 59 lines, 104 cols)</p>
-<pre><code># Zellij before all fixes
+<pre tabindex="0"><code># Zellij before all fixes
 Time (mean ± σ):     19.175 s ±  0.347 s    [User: 4.5 ms, System: 2754.7 ms]
 Range (min … max):   18.647 s … 19.803 s    10 runs
 
@@ -5209,7 +5209,7 @@ Range (min … max):    5.526 s …  5.678 s    10 runs
     <footer class="footer">
 </footer>
 
-<script src="/assets/main.js"></script>
+<script src="https://www.poor.dev/assets/main.js"></script>
 
   
 </div>

@@ -9,29 +9,29 @@
 <meta name="description" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and learning how to cause a small bit of mischief."/>
 <meta name="keywords" content="Terminal, pty, tty, shell, cli, commandline, ANSI, Rust&#34;, Rustlang"/>
 <meta name="robots" content="noodp"/>
-<link rel="canonical" href="/blog/terminal-anatomy/" />
+<link rel="canonical" href="https://www.poor.dev/blog/terminal-anatomy/" />
 
-<link rel="stylesheet" href="/style.css">
-
-
-<link rel="stylesheet" href="/assets/style.css">
-
-  <link rel="stylesheet" href="/assets/green.css">
+<link rel="stylesheet" href="https://www.poor.dev/style.css">
 
 
+<link rel="stylesheet" href="https://www.poor.dev/assets/style.css">
+
+  <link rel="stylesheet" href="https://www.poor.dev/assets/green.css">
 
 
 
-<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/apple-touch-icon-144-precomposed.png">
 
-<link rel="shortcut icon" href="/favicon.ico">
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://www.poor.dev/img/apple-touch-icon-144-precomposed.png">
+
+<link rel="shortcut icon" href="https://www.poor.dev/favicon.ico">
 
 
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Anatomy of a Terminal Emulator " />
 <meta name="twitter:description" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and learning how to cause a small bit of mischief." />
-<meta name="twitter:site" content="/" />
+<meta name="twitter:site" content="https://www.poor.dev/" />
 <meta name="twitter:creator" content="Aram Drevekenin" />
 <meta name="twitter:image" content="https://www.poor.dev/img/anatomy/cover.png">
 <meta name="twitter:image:alt" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and learning how to cause a small bit of mischief.">
@@ -43,7 +43,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:title" content="Anatomy of a Terminal Emulator ">
 <meta property="og:description" content="The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and learning how to cause a small bit of mischief." />
-<meta property="og:url" content="/blog/terminal-anatomy/" />
+<meta property="og:url" content="https://www.poor.dev/blog/terminal-anatomy/" />
 <meta property="og:site_name" content="Anatomy of a Terminal Emulator" />
 <meta property="og:image" content="https://www.poor.dev/img/anatomy/cover.png">
 <meta property="og:image:width" content="1200">
@@ -137,7 +137,7 @@
     
 <div class="post">
   <h1 class="post-title">
-    <a href="/blog/terminal-anatomy/">Anatomy of a Terminal Emulator</a></h1>
+    <a href="https://www.poor.dev/blog/terminal-anatomy/">Anatomy of a Terminal Emulator</a></h1>
   <div class="post-meta">
       
     <span class="post-date">
@@ -3724,27 +3724,27 @@
 
 <h2 id="how-does-the-terminal-emulator-interpret-and-display-the-data-from-the-shell">How does the terminal emulator interpret and display the data from the shell?</h2>
 <p>When the shell sends text to the terminal, it uses a set of instructions haphazardly gathered over the years under the title &ldquo;ANSI escape codes&rdquo;. These are used when the shell needs to send anything that is more involved than clear text (eg. changing colors/styles or moving the cursor). To see how these work exactly, let&rsquo;s write a small Rust program that spawns a pty and starts the machine&rsquo;s default shell on its secondary side. Then we can see what the shell sends us.</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">read_from_fd</span><span class="p">(</span><span class="n">fd</span>: <span class="nc">RawFd</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">u8</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">    </span><span class="n">unimplemented</span><span class="o">!</span><span class="p">()</span><span class="w">
+</span><span class="w">    </span><span class="fm">unimplemented!</span><span class="p">()</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span><span class="w">
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">spawn_pty_with_shell</span><span class="p">(</span><span class="n">default_shell</span>: <span class="nb">String</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">RawFd</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">    </span><span class="n">unimplemented</span><span class="o">!</span><span class="p">()</span><span class="w">
+</span><span class="w">    </span><span class="fm">unimplemented!</span><span class="p">()</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span><span class="w">
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">default_shell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span>::<span class="n">env</span>::<span class="n">var</span><span class="p">(</span><span class="s">&#34;SHELL&#34;</span><span class="p">)</span><span class="w">
 </span><span class="w">        </span><span class="p">.</span><span class="n">expect</span><span class="p">(</span><span class="s">&#34;could not find default shell from $SHELL&#34;</span><span class="p">);</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">stdout_fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spawn_pty_with_shell</span><span class="p">(</span><span class="n">default_shell</span><span class="p">);</span><span class="w">
-</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">read_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vec</span><span class="o">!</span><span class="p">[];</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">read_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[];</span><span class="w">
 </span><span class="w">    </span><span class="k">loop</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="n">read_from_fd</span><span class="p">(</span><span class="n">stdout_fd</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">            </span><span class="nb">Some</span><span class="p">(</span><span class="k">mut</span><span class="w"> </span><span class="n">read_bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">                </span><span class="n">read_buffer</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">read_bytes</span><span class="p">);</span><span class="w">
 </span><span class="w">            </span><span class="p">}</span><span class="w">
 </span><span class="w">            </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">                </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from_utf8</span><span class="p">(</span><span class="n">read_buffer</span><span class="p">).</span><span class="n">unwrap</span><span class="p">());</span><span class="w">
+</span><span class="w">                </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from_utf8</span><span class="p">(</span><span class="n">read_buffer</span><span class="p">).</span><span class="n">unwrap</span><span class="p">());</span><span class="w">
 </span><span class="w">                </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w">
 </span><span class="w">            </span><span class="p">}</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w">
@@ -3753,7 +3753,7 @@
 </span></code></pre></div><p>Here we start by getting the path to the system&rsquo;s default shell from the <code>SHELL</code> environment variable and start it in a new process on the secondary side of a pty (in a function that we&rsquo;ll flesh out below).</p>
 <p>This function returns the STDOUT file descriptor of the primary side of the pty. We start reading from it in the <code>read_from_fd</code> function (which we&rsquo;ll also flesh out below). We read until there&rsquo;s no more data to read (presumably the process ended) and then we print out all the data we&rsquo;ve read.</p>
 <p>Let&rsquo;s flesh out the <code>spawn_pty_with_shell</code> function:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">pty</span>::<span class="n">forkpty</span><span class="p">;</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">pty</span>::<span class="n">forkpty</span><span class="p">;</span><span class="w">
 </span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">unistd</span>::<span class="n">ForkResult</span><span class="p">;</span><span class="w">
 </span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">os</span>::<span class="n">unix</span>::<span class="n">io</span>::<span class="n">RawFd</span><span class="p">;</span><span class="w">
 </span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">Command</span><span class="p">;</span><span class="w">
@@ -3773,21 +3773,21 @@
 </span><span class="w">            </span><span class="n">stdout_fd</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w">
 </span><span class="w">        </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">            </span><span class="n">panic</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;failed to fork {:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span><span class="w">            </span><span class="fm">panic!</span><span class="p">(</span><span class="s">&#34;failed to fork {:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w">
 </span><span class="w">    </span><span class="p">}</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span></code></pre></div><p><a href="https://linux.die.net/man/3/forkpty"><code>forkpty</code></a> is a libc function that forks the current process, starts a pty and places the child part of the fork on the secondary side of the pty. We use the excellent <a href="https://docs.rs/nix/0.18.0/nix/index.html"><code>nix</code></a> wrapper around the bare C function to deal with any unsafe code for us.</p>
 <p>The code on the <code>Ok</code> side of the <code>match</code> statement runs in both the parent process (our main program) and the child process. We distinguish between the two by the <code>ForkResult</code>, and so in the child process, we run the default shell, sleep for 2 seconds to let it load and then exit. In the parent process, we return the <code>stdout</code> file descriptor to the program so that it can read what information the child sends it.</p>
 <p>Now, let&rsquo;s flesh out the <code>read_from_fd</code> function:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">unistd</span>::<span class="n">read</span><span class="p">;</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">unistd</span>::<span class="n">read</span><span class="p">;</span><span class="w">
 </span><span class="w">
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">read_from_fd</span><span class="p">(</span><span class="n">fd</span>: <span class="nc">RawFd</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">u8</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="c1">// https://linux.die.net/man/7/pipe
 </span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">read_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="mi">65536</span><span class="p">];</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">read_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">read_buffer</span><span class="p">);</span><span class="w">
 </span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">read_result</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">bytes_read</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">read_buffer</span><span class="p">[..</span><span class="n">bytes_read</span><span class="p">].</span><span class="n">to_vec</span><span class="p">()),</span><span class="w">
+</span><span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">bytes_read</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">read_buffer</span><span class="p">[</span><span class="o">..</span><span class="n">bytes_read</span><span class="p">].</span><span class="n">to_vec</span><span class="p">()),</span><span class="w">
 </span><span class="w">        </span><span class="nb">Err</span><span class="p">(</span><span class="n">_e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">None</span><span class="p">,</span><span class="w">
 </span><span class="w">    </span><span class="p">}</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
@@ -3795,7 +3795,7 @@
 <p>Assuming a successful read, we then allocate a vector from the read portion of our read_buffer and return it to our main program.</p>
 <p>Here&rsquo;s the <a href="https://github.com/imsnif/terminal-anatomy-code-examples/tree/main/spawn_and_read_from_shell">full source for this program</a></p>
 <p>Running this program, we get the following output:</p>
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">^[(B^[[m\r^[[KWelcome to fish, the friendly interactive shell\r\n^[]0;fish /home/aram^[[m^[[97m^[[46m⋊&gt;^[[m^[[33m ~^[[m^[[K^[[67C^[[38;2;85;85;85m10:21:15^[[m\r^[[5C
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">^[(B^[[m\r^[[KWelcome to fish, the friendly interactive shell\r\n^[]0;fish /home/aram^[[m^[[97m^[[46m⋊&gt;^[[m^[[33m ~^[[m^[[K^[[67C^[[38;2;85;85;85m10:21:15^[[m\r^[[5C
 </code></pre></div><p>Almost readable, right? This is the initial output of my default shell, fish.</p>
 <p>It&rsquo;s plain text with a smattering of those &ldquo;ANSI escape codes&rdquo; we talked about at the beginning of this section.
 Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it. Note that the <code>^[</code> character is used here for convenience to denote an <a href="https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character">ASCII escape character</a>.</p>
@@ -7632,10 +7632,10 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <p><em>This is a slightly redacted output. The actual output given by the fish shell includes some repetitions and instructions that I felt weren&rsquo;t relevant to this post.</em></p>
 <p>This is a pretty simple example, but any textual interface that runs in the terminal - regardless of which language it was written in - works in this way.</p>
 <p>One can even send these instructions directly to one&rsquo;s own terminal using the <code>echo</code> command. Go ahead and try this out:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">echo</span> -e <span class="s2">&#34;I am some \033[38;5;9mred text!&#34;</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">echo</span> -e <span class="s2">&#34;I am some \033[38;5;9mred text!&#34;</span>
 </code></pre></div><p>&ldquo;033&rdquo; is the octal representation of the ASCII escape character.</p>
 <p>Just for fun, let&rsquo;s look at a more involved example. Here&rsquo;s a big lump of text that was meticulously prepared just for this purpose:</p>
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">[1H[J[8;20H[38;2;167;216;255m!_[B[2D|*`~-.,[B[7D|.-~^`[2;51H!_[B[2D|*~=-.,[B[7D|_,-&#39;`[14;12H!_[B[2D|*`--,[B[6D|.-&#39;[16;34H!_[B[2D|*`~-.,[B[7D|_,-~`[14;43H!_[B[2D|*`~-.,[B[7D|_.-&#34;`[11;20H[38;2;227;176;110m|[B[D|[5;51H|[B[D|[17;12H|[19;34H|[17;43H|[18;11H[38;2;190;97;107m/^\[B[4D/   \[B[6D/,    \[B[8D/#&#34;     \[B[10D/##_   _  \[7;50H/^\[B[4D/   \[B[6D/,    \[B[8D/#&#34;     \[B[10D/##_   _  \[18;42H[38;2;190;97;107m/^\[B[4D/   \[B[6D/,    \[B[8D/#&#34;     \[B[10D/##_   _  \[22;25H[38;2;167;216;255m_____[B[8D0~{_ _ _}~0[B[9D|  ,  |[B[7D| ((* |[B[7D|  `  |[B[6D`-.-`[30;25H[38;2;227;176;110m_,--,_[B[7D/ |  | \[B[8D| |  | |[B[8D| |  &lt;&amp;&gt;[B[8D| |  | |[B[8D| |  | |[28;12H_[B[2D/+\[B[4D|+|+|[B[5D|+|+|[B[5D|+|+|[B[5D^^^^^[28;43H_[B[2D/+\[B[4D|+|+|[B[5D|+|+|[B[5D|+|+|[B[5D^^^^^[25;57H___[B[3D/+\[B[3D|+|[B[3D|+|[B[3D^^^[11;45H[38;2;112;117;121m_[3C_[3C_[3C_[B[14D[ ]_[ ]_[ ]_[ ][12;15H_[3C_[3C_[3C_[3C_[13;14H[ ]_[ ]_[ ]_[ ]_[ ]            |_=_-=_ - =_|[14;15H|_=_ =-_-_  = =_|[14;46H|=_= -    |[15;18H_- _        |[15;50H= []  |[16;16H|=     []     |[16;49H_-     |[17;16H|_=- -        |[17;46H|=_-      |[18;16H|=_= -        |[18;46H|_ - =[]  |[19;7H_[19;15H_|_=- _   _   _|  _[19;37H_[19;46H|=_-      |[20;6H[ ][20;16H[ ]_[ ]_[ ]_[ ]_[ ]_[ ]_[20;47H[ ]=-    |[21;7H|[21;17H_=-___=__=__- =-_ -=_[21;48H| _ []  |[22;6H_[3C_[3C_[3C_-_ =[22;37H_[3C_[3C_[3C_ -    |\[23;5H[ ]_[ ]_[ ]_[ ]=_[23;36H[ ]_[ ]_[ ]_[ ]=-   | \[24;5H|_=__-_=-_  =_|-=_[24;36H|_=-___-_ =-__|_    |  \[25;6H| _- =-     |-_[25;37H|= _=       | -    |[3C\[26;6H|= -_=      |=  _[26;37H|_-=_       |=_    |[3C|[27;6H| =_  -     |_ = _[27;37H| =_ = =    |=_-   |[3C|[28;6H|-_=-[28;18H|=_   =            |=_= -[28;49H|  =   |[3C|[29;6H|=_-[29;18H| -=               |_=-[29;49H|=_    |[3C|[30;6H|=_[30;18H|= -  -[30;37H|_=[30;49H|  -_  |=  |[31;6H|  -[31;18H|-_=[31;37H|=_[31;49H|-=_   |_-/[32;6H|=_=[32;18H| =_=[32;37H|_-[32;49H|_ =   |=/[33;6H| _[33;18H|= -[33;37H|=_=[33;49H|_=-   |/[34;6H|=_ =       | =_-_[34;37H|   =_      | -_   |[35;6H|_=-_       |=_=[35;37H|=_=        |=-    |[36;1H[38;2;163;189;141m^^^^^^^^^^`^`^^`^`^`^^^&#34;&#34;&#34;&#34;&#34;&#34;&#34;&#34;^`^^``^^`^^`^^`^`^``^`^``^``^^
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">[1H[J[8;20H[38;2;167;216;255m!_[B[2D|*`~-.,[B[7D|.-~^`[2;51H!_[B[2D|*~=-.,[B[7D|_,-&#39;`[14;12H!_[B[2D|*`--,[B[6D|.-&#39;[16;34H!_[B[2D|*`~-.,[B[7D|_,-~`[14;43H!_[B[2D|*`~-.,[B[7D|_.-&#34;`[11;20H[38;2;227;176;110m|[B[D|[5;51H|[B[D|[17;12H|[19;34H|[17;43H|[18;11H[38;2;190;97;107m/^\[B[4D/   \[B[6D/,    \[B[8D/#&#34;     \[B[10D/##_   _  \[7;50H/^\[B[4D/   \[B[6D/,    \[B[8D/#&#34;     \[B[10D/##_   _  \[18;42H[38;2;190;97;107m/^\[B[4D/   \[B[6D/,    \[B[8D/#&#34;     \[B[10D/##_   _  \[22;25H[38;2;167;216;255m_____[B[8D0~{_ _ _}~0[B[9D|  ,  |[B[7D| ((* |[B[7D|  `  |[B[6D`-.-`[30;25H[38;2;227;176;110m_,--,_[B[7D/ |  | \[B[8D| |  | |[B[8D| |  &lt;&amp;&gt;[B[8D| |  | |[B[8D| |  | |[28;12H_[B[2D/+\[B[4D|+|+|[B[5D|+|+|[B[5D|+|+|[B[5D^^^^^[28;43H_[B[2D/+\[B[4D|+|+|[B[5D|+|+|[B[5D|+|+|[B[5D^^^^^[25;57H___[B[3D/+\[B[3D|+|[B[3D|+|[B[3D^^^[11;45H[38;2;112;117;121m_[3C_[3C_[3C_[B[14D[ ]_[ ]_[ ]_[ ][12;15H_[3C_[3C_[3C_[3C_[13;14H[ ]_[ ]_[ ]_[ ]_[ ]            |_=_-=_ - =_|[14;15H|_=_ =-_-_  = =_|[14;46H|=_= -    |[15;18H_- _        |[15;50H= []  |[16;16H|=     []     |[16;49H_-     |[17;16H|_=- -        |[17;46H|=_-      |[18;16H|=_= -        |[18;46H|_ - =[]  |[19;7H_[19;15H_|_=- _   _   _|  _[19;37H_[19;46H|=_-      |[20;6H[ ][20;16H[ ]_[ ]_[ ]_[ ]_[ ]_[ ]_[20;47H[ ]=-    |[21;7H|[21;17H_=-___=__=__- =-_ -=_[21;48H| _ []  |[22;6H_[3C_[3C_[3C_-_ =[22;37H_[3C_[3C_[3C_ -    |\[23;5H[ ]_[ ]_[ ]_[ ]=_[23;36H[ ]_[ ]_[ ]_[ ]=-   | \[24;5H|_=__-_=-_  =_|-=_[24;36H|_=-___-_ =-__|_    |  \[25;6H| _- =-     |-_[25;37H|= _=       | -    |[3C\[26;6H|= -_=      |=  _[26;37H|_-=_       |=_    |[3C|[27;6H| =_  -     |_ = _[27;37H| =_ = =    |=_-   |[3C|[28;6H|-_=-[28;18H|=_   =            |=_= -[28;49H|  =   |[3C|[29;6H|=_-[29;18H| -=               |_=-[29;49H|=_    |[3C|[30;6H|=_[30;18H|= -  -[30;37H|_=[30;49H|  -_  |=  |[31;6H|  -[31;18H|-_=[31;37H|=_[31;49H|-=_   |_-/[32;6H|=_=[32;18H| =_=[32;37H|_-[32;49H|_ =   |=/[33;6H| _[33;18H|= -[33;37H|=_=[33;49H|_=-   |/[34;6H|=_ =       | =_-_[34;37H|   =_      | -_   |[35;6H|_=-_       |=_=[35;37H|=_=        |=-    |[36;1H[38;2;163;189;141m^^^^^^^^^^`^`^^`^`^`^^^&#34;&#34;&#34;&#34;&#34;&#34;&#34;&#34;^`^^``^^`^^`^^`^`^``^`^``^``^^
 </code></pre></div><p>Let&rsquo;s see how the terminal emulator would interpret it:</p>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
@@ -34166,14 +34166,14 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <h3 id="special-character-charset">Special character charset</h3>
 <p>When we interpreted the fish shell output above, we saw the <code>^[(B</code> instruction at its beginning. We described this as &ldquo;change charset to ASCII&rdquo;. Let&rsquo;s take a look at another charset commonly referred to as the &ldquo;special characters&rdquo; charset. We can switch to this charset with the <code>^[(0</code> instruction (or <code>echo -e &quot;\033(0&quot;</code>), after which all text sent to the terminal emulator will be interpreted against that set instead of the standard ASCII.</p>
 <p>This set includes <a href="https://en.wikipedia.org/wiki/Box-drawing_character">Box drawing characters</a> which one can use in order to draw textual interfaces. Let&rsquo;s look at an example:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">echo</span> -e <span class="s2">&#34;\033(0lqqqk\nx   x\nmqqqj&#34;</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">echo</span> -e <span class="s2">&#34;\033(0lqqqk\nx   x\nmqqqj&#34;</span>
 </code></pre></div><p>Gives us:</p>
-<pre><code>┌───┐
+<pre tabindex="0"><code>┌───┐
 │   │
 └───┘
 </code></pre><p>Once we switched to the &ldquo;special characters&rdquo; charset, the characters we entered were interpreted against the special characters table and so we were able to draw a box.</p>
 <p>Let&rsquo;s look at a more involved example</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">echo</span> -en <span class="s2">&#34;\033(0\
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">echo</span> -en <span class="s2">&#34;\033(0\
 </span><span class="s2">                            lq \033(BTests \033(0qqqqqk       lq  lq \033(BAssertion error\033(0 qk\n\
 </span><span class="s2">                            x             x       x   x                   x\n\
 </span><span class="s2">                            x             x       x   x \033(B! Should equal !\033(0  x\n\
@@ -34186,7 +34186,7 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 </span><span class="s2">                            x             x       x   x                   x\n\
 </span><span class="s2">                            mqqqqqqqqqqqqqj       mq  mqqqqqqqqqqqqqqqqqqqj\n&#34;</span>
 </code></pre></div><p>Gives us:</p>
-<pre><code>
+<pre tabindex="0"><code>
                             ┌─ Tests ─────┐       ┌─  ┌─ Assertion error ─┐
                             │             │       │   │                   │
                             │             │       │   │ ! Should equal !  │
@@ -34339,7 +34339,7 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <p>I find that users often play around with the size of their terminal window - either in order to display it near other applications, or in order to display several terminal windows on the same screen at a time. We can use this paradigm and create a really good UX by not only fitting the application to the user&rsquo;s window, but also conditionally displaying a different UI depending on the window size.</p>
 <p>To do this, we can listen to the SIGWINCH signal. This signal is triggered every time a process&rsquo;s controlling terminal is resized.</p>
 <p>Here&rsquo;s an example of a Rust program that changes its UI depending on the terminal window size:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">pty</span>::<span class="n">Winsize</span><span class="p">;</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">pty</span>::<span class="n">Winsize</span><span class="p">;</span><span class="w">
 </span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">signal_hook</span>::<span class="p">{</span><span class="n">consts</span>::<span class="n">signal</span>::<span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">iterator</span>::<span class="n">Signals</span><span class="p">};</span><span class="w">
 </span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">io</span>::<span class="n">prelude</span>::<span class="o">*</span><span class="p">;</span><span class="w">
 </span><span class="w">
@@ -34362,26 +34362,26 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">draw_rect</span><span class="p">(</span><span class="n">rows</span>: <span class="kt">u16</span><span class="p">,</span><span class="w"> </span><span class="n">columns</span>: <span class="kt">u16</span><span class="p">,</span><span class="w"> </span><span class="n">x</span>: <span class="kt">u16</span><span class="p">,</span><span class="w"> </span><span class="n">y</span>: <span class="kt">u16</span><span class="p">,</span><span class="w"> </span><span class="n">middle_text</span>: <span class="kp">&amp;</span><span class="kt">str</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">top_and_bottom_edge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;q&#34;</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">columns</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">usize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">blank_middle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34; &#34;</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">columns</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">usize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span><span class="w">
-</span><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">y_index</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">y</span><span class="p">..</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">y_index</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">y</span><span class="o">..</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">y_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">            </span><span class="n">print</span><span class="o">!</span><span class="p">(</span><span class="w">
+</span><span class="w">            </span><span class="fm">print!</span><span class="p">(</span><span class="w">
 </span><span class="w">                </span><span class="s">&#34;\u{1b}[{};{}H\u{1b}(0l{}k&#34;</span><span class="p">,</span><span class="w">
 </span><span class="w">                </span><span class="n">y_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
 </span><span class="w">                </span><span class="n">x</span><span class="p">,</span><span class="w">
 </span><span class="w">                </span><span class="n">top_and_bottom_edge</span><span class="w">
 </span><span class="w">            </span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">y_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rows</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">            </span><span class="n">print</span><span class="o">!</span><span class="p">(</span><span class="w">
+</span><span class="w">            </span><span class="fm">print!</span><span class="p">(</span><span class="w">
 </span><span class="w">                </span><span class="s">&#34;\u{1b}[{};{}H\u{1b}(0m{}j&#34;</span><span class="p">,</span><span class="w">
 </span><span class="w">                </span><span class="n">y_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
 </span><span class="w">                </span><span class="n">x</span><span class="p">,</span><span class="w">
 </span><span class="w">                </span><span class="n">top_and_bottom_edge</span><span class="w">
 </span><span class="w">            </span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">            </span><span class="n">print</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[{};{}H\u{1b}(0x{}x&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">y_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">blank_middle</span><span class="p">);</span><span class="w">
+</span><span class="w">            </span><span class="fm">print!</span><span class="p">(</span><span class="s">&#34;\u{1b}[{};{}H\u{1b}(0x{}x&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">y_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">blank_middle</span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w">
 </span><span class="w">    </span><span class="p">}</span><span class="w">
-</span><span class="w">    </span><span class="n">print</span><span class="o">!</span><span class="p">(</span><span class="w">
+</span><span class="w">    </span><span class="fm">print!</span><span class="p">(</span><span class="w">
 </span><span class="w">        </span><span class="s">&#34;\u{1b}(B\u{1b}[{};{}H{}&#34;</span><span class="p">,</span><span class="w">
 </span><span class="w">        </span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
 </span><span class="w">        </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">columns</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">middle_text</span><span class="p">.</span><span class="n">chars</span><span class="p">().</span><span class="n">count</span><span class="p">()</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u16</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
@@ -34444,8 +34444,8 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span><span class="w">
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">draw_ui</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[H\u{1b}[J&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// clear screen
-</span><span class="c1"></span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[?25l&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// hide cursor
+</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;\u{1b}[H\u{1b}[J&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// clear screen
+</span><span class="c1"></span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;\u{1b}[?25l&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// hide cursor
 </span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">primary_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;I am some arbitrary text&#34;</span><span class="p">;</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">secondary_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;Me too! Here&#39;s a shrug emoticon: ¯\\_(ツ)_/¯&#34;</span><span class="p">;</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">min_side_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span>::<span class="n">cmp</span>::<span class="n">max</span><span class="p">(</span><span class="w">
@@ -34458,7 +34458,7 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 </span><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">columns</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">min_side_width</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="n">top_and_bottom_ui</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span><span class="w"> </span><span class="n">columns</span><span class="p">,</span><span class="w"> </span><span class="n">primary_text</span><span class="p">,</span><span class="w"> </span><span class="n">secondary_text</span><span class="p">);</span><span class="w">
 </span><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">        </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}(BSorry, terminal is too small!&#34;</span><span class="p">)</span><span class="w">
+</span><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;\u{1b}(BSorry, terminal is too small!&#34;</span><span class="p">)</span><span class="w">
 </span><span class="w">    </span><span class="p">}</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span>::<span class="n">io</span>::<span class="n">stdout</span><span class="p">().</span><span class="n">flush</span><span class="p">();</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
@@ -34480,11 +34480,11 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 </span><span class="w">            </span><span class="n">SIGTERM</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SIGINT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SIGQUIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SIGHUP</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">                </span><span class="k">break</span><span class="p">;</span><span class="w">
 </span><span class="w">            </span><span class="p">}</span><span class="w">
-</span><span class="w">            </span><span class="n">_</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">unreachable</span><span class="o">!</span><span class="p">(),</span><span class="w">
+</span><span class="w">            </span><span class="n">_</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">unreachable!</span><span class="p">(),</span><span class="w">
 </span><span class="w">        </span><span class="p">}</span><span class="w">
 </span><span class="w">    </span><span class="p">}</span><span class="w">
-</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[H\u{1b}[J&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// clear screen
-</span><span class="c1"></span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\u{1b}[?25h&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// show cursor
+</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;\u{1b}[H\u{1b}[J&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// clear screen
+</span><span class="c1"></span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;\u{1b}[?25h&#34;</span><span class="p">);</span><span class="w"> </span><span class="c1">// show cursor
 </span><span class="c1"></span><span class="p">}</span><span class="w">
 </span><span class="w">
 </span></code></pre></div><p>In the <code>main</code> function, we&rsquo;re using the excellent <a href="https://crates.io/crates/signal-hook">signal-hook</a> crate in order to:</p>
@@ -34500,7 +34500,7 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <p>Here&rsquo;s the <a href="https://github.com/imsnif/terminal-anatomy-code-examples/tree/main/responsive_terminal_ui">full source for this program</a></p>
 <h3 id="raw-mode">Raw mode</h3>
 <p>When developing for the terminal, we often wish for finer control over the text the user enters into their terminal and that is available to us through STDIN. Think about this use case for example:</p>
-<pre><code>Would you like to quit? [y/n]
+<pre tabindex="0"><code>Would you like to quit? [y/n]
 </code></pre><p>As we discussed at the beginning of this post, STDIN is line-buffered by the pty. Meaning the user would have to press <code>ENTER</code> after they entered their one-letter choice in order for us to read it. To get around this problem, we can set the user&rsquo;s terminal to &ldquo;raw mode&rdquo;. This achieves a few things:</p>
 <ol>
 <li>STDIN is read character-by-character</li>
@@ -34508,14 +34508,14 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <li>Special processing of input is disabled (eg. Ctrl-c will no longer send a SIGINT to the terminal)</li>
 </ol>
 <p>Here&rsquo;s a small Rust program that shows how this is done:</p>
-<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">sys</span>::<span class="n">termios</span><span class="p">;</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">nix</span>::<span class="n">sys</span>::<span class="n">termios</span><span class="p">;</span><span class="w">
 </span><span class="w">
 </span><span class="w"></span><span class="k">fn</span> <span class="nf">set_raw_mode</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">tio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">termios</span>::<span class="n">tcgetattr</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="n">expect</span><span class="p">(</span><span class="s">&#34;could not get terminal attribute&#34;</span><span class="p">);</span><span class="w">
 </span><span class="w">    </span><span class="n">termios</span>::<span class="n">cfmakeraw</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">tio</span><span class="p">);</span><span class="w">
 </span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">termios</span>::<span class="n">tcsetattr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">termios</span>::<span class="n">SetArg</span>::<span class="n">TCSANOW</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tio</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span><span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
-</span><span class="w">        </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">panic</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;error {:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">),</span><span class="w">
+</span><span class="w">        </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="fm">panic!</span><span class="p">(</span><span class="s">&#34;error {:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">),</span><span class="w">
 </span><span class="w">    </span><span class="p">};</span><span class="w">
 </span><span class="w"></span><span class="p">}</span><span class="w">
 </span><span class="w">
@@ -34525,8 +34525,8 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">stdin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">io</span>::<span class="n">stdin</span><span class="p">();</span><span class="w">
 </span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stdin</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span><span class="w">
 </span><span class="w">    </span><span class="k">loop</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span><span class="w">        </span><span class="n">print</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;\n\r&#34;</span><span class="p">);</span><span class="w">
-</span><span class="w">        </span><span class="n">print</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Would you like to quit [y/n]? &#34;</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="fm">print!</span><span class="p">(</span><span class="s">&#34;\n\r&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="fm">print!</span><span class="p">(</span><span class="s">&#34;Would you like to quit [y/n]? &#34;</span><span class="p">);</span><span class="w">
 </span><span class="w">        </span><span class="n">io</span>::<span class="n">stdout</span><span class="p">().</span><span class="n">lock</span><span class="p">().</span><span class="n">flush</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
 </span><span class="w">        </span><span class="n">handle</span><span class="p">.</span><span class="n">read_exact</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">buffer</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
 </span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">[</span><span class="mi">121</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// y
@@ -34544,33 +34544,33 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <p>Here&rsquo;s the <a href="https://github.com/imsnif/terminal-anatomy-code-examples/tree/main/terminal_raw_mode">full source for this program</a></p>
 <h2 id="finally-lets-use-all-of-this-to-create-some-mischief">Finally, let&rsquo;s use all of this to create some mischief!</h2>
 <p>Remember that tired old mantra &ldquo;In linux, everything is a file&rdquo;? Well, so is the pty. We can find our own pty with the <code>ps</code> command without any arguments. Something like this:</p>
-<pre><code>$ ps
+<pre tabindex="0"><code>$ ps
 
    PID TTY          TIME CMD
 393500 pts/1    00:07:09 pty
 393501 pts/1    00:00:03 fish
 595419 pts/1    00:00:00 ps
 </code></pre><p>In the <code>TTY</code> column, we see <code>pts/1</code> which points to <code>/dev/pts/1</code>. That&rsquo;s our pty. Let&rsquo;s say hi!</p>
-<pre><code>$ echo &quot;Hi!&quot; &gt; /dev/pts/1
+<pre tabindex="0"><code>$ echo &quot;Hi!&quot; &gt; /dev/pts/1
 
 Hi!
 
 $
 </code></pre><p>Here, we redirected the STDOUT of the echo command into the STDOUT of the pty. And since this pty is ours, we saw it on screen. Let&rsquo;s open another terminal window and do the same:</p>
 <p>New window:</p>
-<pre><code>$ echo &quot;Hi from new window!&quot; &gt; /dev/pts/1
+<pre tabindex="0"><code>$ echo &quot;Hi from new window!&quot; &gt; /dev/pts/1
 </code></pre><p>Original window:</p>
-<pre><code>Hi from new window!
+<pre tabindex="0"><code>Hi from new window!
 </code></pre><p>Pretty cool, we&rsquo;re getting a whole 80s chat app vibe going on. Let&rsquo;s see if we can use some of these ANSI escape codes we learned about:</p>
 <p>New window:</p>
-<pre><code>$ echo -e &quot;Hi\033[10Cthere!&quot; &gt; /dev/pts/1
+<pre tabindex="0"><code>$ echo -e &quot;Hi\033[10Cthere!&quot; &gt; /dev/pts/1
 </code></pre><p>Original window:</p>
-<pre><code>Hi          there!
+<pre tabindex="0"><code>Hi          there!
 </code></pre><p>Well would you look at that. Since the STDOUT of the pty is interpreted by the terminal emulator of the original window, we can send it instructions to do stuff and it&rsquo;ll happily oblige. Here we told it to move the cursor 10 columns forward before printing the second word.</p>
 <p>Remember that conversation you keep having with your teammates about security? About how they shouldn&rsquo;t all be logging into that production server with the same user?</p>
 <p>Well. Here&rsquo;s the ANSI escape code that makes the cursor invisible: <code>\033[?25l</code>. You can try it youself with <code>echo -en &quot;\033?[25l&quot;</code> (to bring it back: <code>echo -en &quot;\033[?25h&quot;</code>).</p>
 <p>Wouldn&rsquo;t it be awful if someone would do this to all connected users? Maybe someone using this small bashlet?</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="k">for</span> i in <span class="k">$(</span>ls /dev/pts <span class="p">|</span> grep -v ptmx<span class="k">)</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> -en <span class="s2">&#34;\033[?25l&#34;</span> &gt; /dev/pts/<span class="nv">$i</span><span class="p">;</span> <span class="k">done</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="k">for</span> i in <span class="k">$(</span>ls /dev/pts <span class="p">|</span> grep -v ptmx<span class="k">)</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> -en <span class="s2">&#34;\033[?25l&#34;</span> &gt; /dev/pts/<span class="nv">$i</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div><p>Side note: please do not harass people. I believe we should differentiate situations in which this sort of mischief would be taken in good fun and others in which it would cause anguish or anxiety. As a person who is sometimes prone to anxiety, I urge you: when in doubt, please err on the side of caution and kindness.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post we gave a broad overview of the different players involved in the operation of the terminal emulator and how they communicate. We wrote some small Rust programs to demonstrate the capabilities of this platform and showed visual examples of how data is interpreted and displayed on screen.</p>
@@ -34604,7 +34604,7 @@ $
     <footer class="footer">
 </footer>
 
-<script src="/assets/main.js"></script>
+<script src="https://www.poor.dev/assets/main.js"></script>
 
   
 </div>
