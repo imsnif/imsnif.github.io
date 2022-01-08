@@ -2,44 +2,44 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blogs on poor.dev</title>
-    <link>https://www.poor.dev/blog/</link>
+    <link>https://poor.dev/blog/</link>
     <description>Recent content in Blogs on poor.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 02 Nov 2021 09:00:00 +0200</lastBuildDate><atom:link href="https://www.poor.dev/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 02 Nov 2021 09:00:00 +0200</lastBuildDate><atom:link href="https://poor.dev/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Anatomy of a Terminal Emulator</title>
-      <link>https://www.poor.dev/terminal-anatomy/</link>
+      <link>https://poor.dev/terminal-anatomy/</link>
       <pubDate>Tue, 02 Nov 2021 09:00:00 +0200</pubDate>
       
-      <guid>https://www.poor.dev/terminal-anatomy/</guid>
+      <guid>https://poor.dev/terminal-anatomy/</guid>
       <description>The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and learning how to cause a small bit of mischief.</description>
     </item>
     
     <item>
       <title>Anatomy of a Terminal Emulator</title>
-      <link>https://www.poor.dev/blog/terminal-anatomy/</link>
+      <link>https://poor.dev/blog/terminal-anatomy/</link>
       <pubDate>Tue, 02 Nov 2021 09:00:00 +0200</pubDate>
       
-      <guid>https://www.poor.dev/blog/terminal-anatomy/</guid>
+      <guid>https://poor.dev/blog/terminal-anatomy/</guid>
       <description>The terminal emulator as a platform for development. Understanding the nitty-gritty, writing some Rust examples and learning how to cause a small bit of mischief.</description>
     </item>
     
     <item>
       <title>How we improved the performance of our Rust app</title>
-      <link>https://www.poor.dev/blog/performance/</link>
+      <link>https://poor.dev/blog/performance/</link>
       <pubDate>Mon, 19 Jul 2021 09:00:00 +0200</pubDate>
       
-      <guid>https://www.poor.dev/blog/performance/</guid>
+      <guid>https://poor.dev/blog/performance/</guid>
       <description>A writeup of our journey to improve the performance of Zellij</description>
     </item>
     
     <item>
       <title>Implementing a job queue in Rust</title>
-      <link>https://www.poor.dev/blog/what-job-queue/</link>
+      <link>https://poor.dev/blog/what-job-queue/</link>
       <pubDate>Wed, 30 Oct 2019 20:00:00 +0200</pubDate>
       
-      <guid>https://www.poor.dev/blog/what-job-queue/</guid>
+      <guid>https://poor.dev/blog/what-job-queue/</guid>
       <description>I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here</description>
     </item>
     

@@ -2,30 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.poor.dev/blog/</loc>
+    <loc>https://poor.dev/blog/</loc>
     <lastmod>2021-11-02T09:00:00+02:00</lastmod>
   </url><url>
-    <loc>https://www.poor.dev/</loc>
+    <loc>https://poor.dev/</loc>
     <lastmod>2021-11-02T09:00:00+02:00</lastmod>
   </url><url>
-    <loc>https://www.poor.dev/terminal-anatomy/</loc>
+    <loc>https://poor.dev/terminal-anatomy/</loc>
     <lastmod>2021-11-02T09:00:00+02:00</lastmod>
   </url><url>
-    <loc>https://www.poor.dev/blog/terminal-anatomy/</loc>
+    <loc>https://poor.dev/blog/terminal-anatomy/</loc>
     <lastmod>2021-11-02T09:00:00+02:00</lastmod>
   </url><url>
-    <loc>https://www.poor.dev/blog/performance/</loc>
+    <loc>https://poor.dev/blog/performance/</loc>
     <lastmod>2021-07-19T09:00:00+02:00</lastmod>
   </url><url>
-    <loc>https://www.poor.dev/blog/what-job-queue/</loc>
+    <loc>https://poor.dev/blog/what-job-queue/</loc>
     <lastmod>2019-10-30T20:00:00+02:00</lastmod>
   </url><url>
-    <loc>https://www.poor.dev/categories/</loc>
+    <loc>https://poor.dev/categories/</loc>
   </url><url>
-    <loc>https://www.poor.dev/external_work/</loc>
+    <loc>https://poor.dev/external_work/</loc>
   </url><url>
-    <loc>https://www.poor.dev/projects/</loc>
+    <loc>https://poor.dev/projects/</loc>
   </url><url>
-    <loc>https://www.poor.dev/tags/</loc>
+    <loc>https://poor.dev/tags/</loc>
   </url>
 </urlset>
