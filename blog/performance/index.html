@@ -181,8 +181,9 @@ In simplified terms, it&rsquo;s an application running &ldquo;between&rdquo; you
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/TextPlugin.min.js"></script>
-<figure>
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div data-nosnippet>
+  <figure>
+  <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    class="performance1"
    max-width="785.70197"
@@ -1295,7 +1296,8 @@ In simplified terms, it&rsquo;s an application running &ldquo;between&rdquo; you
   </g>
 </svg>
 
-</figure>
+  </figure>
+</div>
 <script src=/img/performance-1.js></script> 
 
 <p>The pty thread continuously polls the pty in order to see if it has new data in a non-blocking loop inside an async task. Sleeping a fixed amount of time if no data was received.
@@ -1349,8 +1351,9 @@ Range (min … max):   18.647 s … 19.803 s    10 runs
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/TextPlugin.min.js"></script>
-<figure>
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div data-nosnippet>
+  <figure>
+  <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -2896,7 +2899,8 @@ Range (min … max):   18.647 s … 19.803 s    10 runs
   </g>
 </svg>
 
-</figure>
+  </figure>
+</div>
 <script src=/img/performance-2.js></script> 
 
 <p>Since there&rsquo;s no synchronization between the pty thread and the screen thread, the former ends up filling the MPSC channel with data much faster than the screen thread can handle it.
@@ -2946,8 +2950,9 @@ To do this, we switched the asynchronous channel to a bounded synchronous channe
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/TextPlugin.min.js"></script>
-<figure>
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div data-nosnippet>
+  <figure>
+  <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -4964,7 +4969,8 @@ To do this, we switched the asynchronous channel to a bounded synchronous channe
        y="50.667194">25%</tspan></text>
 </svg>
 
-</figure>
+  </figure>
+</div>
 <script src=/img/performance-3.js></script> 
 
 <h3 id="measuring-the-performance-improvements">Measuring the performance improvements</h3>
