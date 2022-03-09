@@ -9,7 +9,9 @@
 <meta name="description" content="A writeup of our journey to improve the performance of Zellij"/>
 <meta name="keywords" content="Rust, Rustlang, terminal, zellij, performance"/>
 <meta name="robots" content="noodp"/>
+
 <link rel="canonical" href="https://poor.dev/blog/performance/" />
+
 
 <link rel="stylesheet" href="https://poor.dev/style.css">
 
@@ -167,7 +169,7 @@
 <h1 id="application-and-problem-description">Application and problem description</h1>
 <p><img src="/img/performance/multiplexer.png" alt="multiplexer architecture diagram - this is a visualization of what&rsquo;s explained below"></p>
 <p>Zellij is a terminal multiplexer.
-In simplified terms, it&rsquo;s an application running &ldquo;between&rdquo; your terminal emulator (eg. Alacritty, iterm2, Konsole, etc.) and shell.</p>
+In simplified terms, it&rsquo;s an application running &ldquo;between&rdquo; your <a href="https://poor.dev/blog/terminal-anatomy/">terminal emulator</a> (eg. Alacritty, iterm2, Konsole, etc.) and shell.</p>
 <p>It allows you to create several &ldquo;tabs&rdquo; and &ldquo;panes&rdquo;, as well as close your terminal emulator and later re-attach to the same session from a new window as long as Zellij keeps running in the background.</p>
 <p>Zellij keeps the state of every terminal pane in order to be able to recreate it every time a user connects to an existing session, or even switches between tabs internally. This state includes the text and styling of the pane and the cursor position inside the pane.</p>
 <p>The performance issue could be seen most strongly when displaying large amounts of data inside a Zellij pane. For example, <code>cat</code>ing a very large file. In Zellij this would be slow compared not only to a bare terminal emulator, but also compared to other terminal multiplexers.</p>
