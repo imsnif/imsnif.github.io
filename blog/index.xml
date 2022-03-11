@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Blogs on Poor Dev - Aram Drevekenin&#39;s personal website and blog</title>
+    <title>Blogs on poor.dev</title>
     <link>https://poor.dev/blog/</link>
-    <description>Recent content in Blogs on Poor Dev - Aram Drevekenin&#39;s personal website and blog</description>
+    <description>Recent content in Blogs on poor.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 02 Nov 2021 09:00:00 +0200</lastBuildDate><atom:link href="https://poor.dev/blog/index.xml" rel="self" type="application/rss+xml" />
