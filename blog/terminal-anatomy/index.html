@@ -140,7 +140,7 @@
     
     
     <span class="post-authorr">::
-      <a href="https://twitter.com/im_snif">Aram Drevekenin</a>
+      <a href="https://hachyderm.io/@imsnif">Aram Drevekenin</a>
     </span>
     
   </div>
@@ -162,7 +162,7 @@
 <p>The terminal is a ubiquitous platform that has been fairly stable for many years. There are plenty of resources out there for understanding its inner workings, but most of them are either fairly arcane or offer deep knowledge about a very specific area. This post aims to bridge this gap by offering a gentle and broad introduction to the terminal emulator as a platform for development.</p>
 <p>We&rsquo;ll talk about the different parts of the terminal and how they interact, build a small program to read input from the shell and understand how it&rsquo;s interpreted, discuss how to create a user interface in the terminal and finally see how we can use all of this to cause some mischief.</p>
 <p>I&rsquo;ve used Rust for code examples, but tried to make them as simple and short as possible so that they&rsquo;ll also be comprehensible to non-Rust programmers. I also provided explanations of the relevant parts of the code. We refer to the workings of terminal emulators in a unix or unix-like system (eg. Linux and macOS). Some parts might also be relevant to other operating systems.</p>
-<p>While this is aimed at those new to developing terminal applications, I tried to go into enough depth in certain areas to keep things interesting for old terminal hounds as well. If you found a mistake in this post, or feel something has been over-simplified or hand-waved away, feel free to hit me up on <a href="https://twitter.com/im_snif">Twitter</a>.</p>
+<p>While this is aimed at those new to developing terminal applications, I tried to go into enough depth in certain areas to keep things interesting for old terminal hounds as well.</p>
 <h2 id="different-parts-of-the-terminal">Different parts of the terminal</h2>
 <p>In relation to the terminal emulator, one often hears terms such as &ldquo;the shell&rdquo; (or command-line) and pty. Let&rsquo;s talk a little about all of these and their relationship.</p>
 <p>The terminal emulator, as its name suggests, carries with it a lot of history. In this post though, we&rsquo;re going to concentrate on how things work today. I&rsquo;ve provided some links for those interested in how things came to be this way at the bottom of this article.</p>
@@ -34580,7 +34580,7 @@ $
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post we gave a broad overview of the different players involved in the operation of the terminal emulator and how they communicate. We wrote some small Rust programs to demonstrate the capabilities of this platform and showed visual examples of how data is interpreted and displayed on screen.</p>
 <p>I hope you learned some new things or deepened your existing knowledge. I also hope you got inspired to dabble your hands in developing for this great platform that has too often, I feel, been relegated to advanced users or a bygone past.</p>
-<p>If you liked this content, consider <a href="https://twitter.com/im_snif">following me on Twitter</a> or <a href="https://github.com/sponsors/imsnif">supporting me on Github Sponsors</a>.</p>
+<p>If you liked this content, consider <a href="https://github.com/sponsors/imsnif">supporting me on Github Sponsors</a>.</p>
 <h3 id="further-reading">Further reading</h3>
 <ol>
 <li><a href="https://www.linusakesson.net/programming/tty/">The TTY demystified</a> - a great article about the TTY/pty, its history and low level operation in Linux/Unix.</li>
