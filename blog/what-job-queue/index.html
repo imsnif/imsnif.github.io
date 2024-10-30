@@ -6,7 +6,8 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<meta name="description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here"/>
+<meta name="description" content="I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it here
+"/>
 <meta name="keywords" content=""/>
 <meta name="robots" content="noodp"/>
 
@@ -32,7 +33,8 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Implementing a job queue in Rust " />
-<meta name="twitter:description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here" />
+<meta name="twitter:description" content="I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it here
+" />
 <meta name="twitter:site" content="https://poor.dev/" />
 <meta name="twitter:creator" content="Aram Drevekenin" />
 <meta name="twitter:image" content="https://poor.dev/img/queue-cover-image.jpg">
@@ -44,7 +46,8 @@
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
 <meta property="og:title" content="Implementing a job queue in Rust ">
-<meta property="og:description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here" />
+<meta property="og:description" content="I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it here
+" />
 <meta property="og:url" content="https://poor.dev/blog/what-job-queue/" />
 <meta property="og:site_name" content="Implementing a job queue in Rust" />
 <meta property="og:image" content="https://poor.dev/img/queue-cover-image.jpg">
@@ -92,15 +95,11 @@
         
       
         
-          <li><a href="/projects/">Projects</a></li>
+          <li><a href="/blog/">Blog</a></li>
         
       
         
           <li><a href="/external_work/">External Work</a></li>
-        
-      
-        
-          <li><a href="/blog/">Blog</a></li>
         
       
       
@@ -116,15 +115,11 @@
       
     
       
-        <li><a href="/projects/">Projects</a></li>
+        <li><a href="/blog/">Blog</a></li>
       
     
       
         <li><a href="/external_work/">External Work</a></li>
-      
-    
-      
-        <li><a href="/blog/">Blog</a></li>
       
     
     
@@ -174,7 +169,7 @@ To do this, it uses libc&rsquo;s <a href="http://man7.org/linux/man-pages/man3/g
 <p>We&rsquo;ll be concentrating on implementing the queue itself. The resolution and recording of the host addresses are out of scope for this post.</p>
 <h2 id="how-does-the-queue-work">How does the queue work?</h2>
 <p>The queue consists of several components that work together to achieve the functionality we desire.</p>
-<p><img src="/img/queue-diagram.png" alt="diagram"></p>
+<p><img alt="diagram" src="/img/queue-diagram.png"></p>
 <h3 id="the-api">The API</h3>
 <ul>
 <li>

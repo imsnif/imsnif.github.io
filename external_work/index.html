@@ -6,8 +6,11 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<meta name="description" content="# A talk I gave at Rust Linz Here&amp;rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about Zellij (then called Mosaic).
-# Adding package-lock.json support to yarn Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&amp;rsquo;s lockfile format. This is a post I wrote after implementing support for npm&amp;rsquo;s package-lock."/>
+<meta name="description" content="# How to get users for your open source project A recording of a talk I gave at an OpenSUSE meetup.
+# Developing WebAssembly Rust plugins for Zellij A recording of a talk I gave at RustLab Florence 2023.
+# Interview of Aram the maintainer of Zellij A long form interview of me for Bedroom Builds.
+# Various blog posts about Zellij releases When there&rsquo;s a major Zellij release, I blog about it on the Zellij site.
+"/>
 <meta name="keywords" content=""/>
 <meta name="robots" content="noodp"/>
 
@@ -33,13 +36,22 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="External work " />
-<meta name="twitter:description" content="# A talk I gave at Rust Linz Here&amp;rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about Zellij (then called Mosaic).
-# Adding package-lock.json support to yarn Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&amp;rsquo;s lockfile format. This is a post I wrote after implementing support for npm&amp;rsquo;s package-lock." />
+<meta name="twitter:description" content="# How to get users for your open source project A recording of a talk I gave at an OpenSUSE meetup.
+# Developing WebAssembly Rust plugins for Zellij A recording of a talk I gave at RustLab Florence 2023.
+# Interview of Aram the maintainer of Zellij A long form interview of me for Bedroom Builds.
+# Various blog posts about Zellij releases When there&rsquo;s a major Zellij release, I blog about it on the Zellij site.
+" />
 <meta name="twitter:site" content="https://poor.dev/" />
 <meta name="twitter:creator" content="" />
 <meta name="twitter:image" content="">
-<meta name="twitter:image:alt" content="# A talk I gave at Rust Linz Here&rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about Zellij (then called Mosaic).
-# Adding package-lock.json support to yarn Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&rsquo;s lockfile format. This is a post I wrote after implementing support for npm&rsquo;s package-lock.">
+<meta name="twitter:image:alt" content="# How to get users for your open source project
+A recording of a talk I gave at an OpenSUSE meetup.
+# Developing WebAssembly Rust plugins for Zellij
+A recording of a talk I gave at RustLab Florence 2023.
+# Interview of Aram the maintainer of Zellij
+A long form interview of me for Bedroom Builds.
+# Various blog posts about Zellij releases
+When there&rsquo;s a major Zellij release, I blog about it on the Zellij site.">
 <meta name="twitter:image:width" content="1200">
 <meta name="twitter:image:height" content="630">
 
@@ -47,15 +59,24 @@
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
 <meta property="og:title" content="External work ">
-<meta property="og:description" content="# A talk I gave at Rust Linz Here&amp;rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about Zellij (then called Mosaic).
-# Adding package-lock.json support to yarn Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&amp;rsquo;s lockfile format. This is a post I wrote after implementing support for npm&amp;rsquo;s package-lock." />
+<meta property="og:description" content="# How to get users for your open source project A recording of a talk I gave at an OpenSUSE meetup.
+# Developing WebAssembly Rust plugins for Zellij A recording of a talk I gave at RustLab Florence 2023.
+# Interview of Aram the maintainer of Zellij A long form interview of me for Bedroom Builds.
+# Various blog posts about Zellij releases When there&rsquo;s a major Zellij release, I blog about it on the Zellij site.
+" />
 <meta property="og:url" content="https://poor.dev/external_work/" />
 <meta property="og:site_name" content="External work" />
 <meta property="og:image" content="">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="# A talk I gave at Rust Linz Here&rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about Zellij (then called Mosaic).
-# Adding package-lock.json support to yarn Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&rsquo;s lockfile format. This is a post I wrote after implementing support for npm&rsquo;s package-lock."/>
+<meta property="og:image:alt" content="# How to get users for your open source project
+A recording of a talk I gave at an OpenSUSE meetup.
+# Developing WebAssembly Rust plugins for Zellij
+A recording of a talk I gave at RustLab Florence 2023.
+# Interview of Aram the maintainer of Zellij
+A long form interview of me for Bedroom Builds.
+# Various blog posts about Zellij releases
+When there&rsquo;s a major Zellij release, I blog about it on the Zellij site."/>
 
 
 
@@ -97,15 +118,11 @@
         
       
         
-          <li><a href="/projects/">Projects</a></li>
+          <li><a href="/blog/">Blog</a></li>
         
       
         
           <li><a href="/external_work/">External Work</a></li>
-        
-      
-        
-          <li><a href="/blog/">Blog</a></li>
         
       
       
@@ -121,15 +138,11 @@
       
     
       
-        <li><a href="/projects/">Projects</a></li>
+        <li><a href="/blog/">Blog</a></li>
       
     
       
         <li><a href="/external_work/">External Work</a></li>
-      
-    
-      
-        <li><a href="/blog/">Blog</a></li>
       
     
     
@@ -155,19 +168,22 @@
   
 
   <div class="post-content">
-    <h1 id="-a-talk-i-gave-at-rust-linzhttpsyoutubeq-te_ubzzjo"># <a href="https://youtu.be/Q-te_UBzzjo">A talk I gave at Rust Linz</a></h1>
+    <h1 id="-how-to-get-users-for-your-open-source-projecthttpswwwyoutubecomwatchvzbte_zlf_yi"># <a href="https://www.youtube.com/watch?v=zBtE_zLF_yI">How to get users for your open source project</a></h1>
+<p>A recording of a talk I gave at an OpenSUSE meetup.</p>
+<h1 id="-developing-webassembly-rust-plugins-for-zellijhttpswwwyoutubecomwatchvpgnicq8rtxk"># <a href="https://www.youtube.com/watch?v=pgNIcQ8rTXk">Developing WebAssembly Rust plugins for Zellij</a></h1>
+<p>A recording of a talk I gave at RustLab Florence 2023.</p>
+<h1 id="-interview-of-aram-the-maintainer-of-zellijhttpswwwyoutubecomwatchvvz_lexpnd4o"># <a href="https://www.youtube.com/watch?v=VZ_lEXPnD4o">Interview of Aram the maintainer of Zellij</a></h1>
+<p>A long form interview of me for Bedroom Builds.</p>
+<h1 id="-various-blog-posts-about-zellij-releaseshttpszellijdevnews"># <a href="https://zellij.dev/news/">Various blog posts about Zellij releases</a></h1>
+<p>When there&rsquo;s a major Zellij release, I blog about it on the Zellij site.</p>
+<h1 id="-some-screencaststutorials-i-recorded-about-zellijhttpszellijdevscreencasts"># <a href="https://zellij.dev/screencasts/">Some screencasts/tutorials I recorded about Zellij</a></h1>
+<p>These are introductory screencasts and tutorials about how to use different features of the tool.</p>
+<h1 id="-a-talk-i-gave-at-rust-linzhttpsyoutubeq-te_ubzzjo"># <a href="https://youtu.be/Q-te_UBzzjo">A talk I gave at Rust Linz</a></h1>
 <p>Here&rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about <a href="https://github.com/zellij-org/zellij">Zellij</a> (then called Mosaic).</p>
 <h1 id="-adding-package-lockjson-support-to-yarnhttpsclassicyarnpkgcomblog20180604yarn-import-package-lock"># <a href="https://classic.yarnpkg.com/blog/2018/06/04/yarn-import-package-lock/">Adding package-lock.json support to yarn</a></h1>
 <p>Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&rsquo;s lockfile format.
 This is a post I wrote after implementing support for npm&rsquo;s package-lock.json file in yarn.</p>
 
-  </div>
-  
-  <div class="pagination">
-    <div class="pagination__title">
-      <span
-        class="pagination__title-h"></span>
-    </div>
   </div>
   
 

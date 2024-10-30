@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  
+    <title>Zellij Development Log 1 :: poor.dev</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="description" content="Colliding Keybindings One of the oldest Zellij problem was the &amp;ldquo;colliding keybindings&amp;rdquo; issue. Where Zellij would take up a keyboard shortcut that an app running inside it would be listening for. For example, Zellij uses the Ctrl o shortcut to enter Session mode, and vim uses the same shortcut to jump forward in the user&amp;rsquo;s jumplist.
+While this can be mitigated with the Zellij Locked mode, to temporarily lock the Zellij interface, or by remapping the colliding keybindings - these have only ever been stop-gap solutions."/>
+<meta name="keywords" content=""/>
+<meta name="robots" content="noodp"/>
+
+<link rel="canonical" href="http://localhost:1313/blog/zellij-development-log-1/" />
+
+
+<link rel="stylesheet" href="http://localhost:1313/style.css">
+
+
+<link rel="stylesheet" href="http://localhost:1313/assets/style.css">
+
+  <link rel="stylesheet" href="http://localhost:1313/assets/green.css">
+
+
+
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://localhost:1313/img/apple-touch-icon-144-precomposed.png">
+
+<link rel="shortcut icon" href="http://localhost:1313/favicon.ico">
+
+
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Zellij Development Log 1 " />
+<meta name="twitter:description" content="Colliding Keybindings One of the oldest Zellij problem was the &amp;ldquo;colliding keybindings&amp;rdquo; issue. Where Zellij would take up a keyboard shortcut that an app running inside it would be listening for. For example, Zellij uses the Ctrl o shortcut to enter Session mode, and vim uses the same shortcut to jump forward in the user&amp;rsquo;s jumplist.
+While this can be mitigated with the Zellij Locked mode, to temporarily lock the Zellij interface, or by remapping the colliding keybindings - these have only ever been stop-gap solutions." />
+<meta name="twitter:site" content="http://localhost:1313/" />
+<meta name="twitter:creator" content="Aram Drevekenin" />
+<meta name="twitter:image" content="https://poor.dev/img/anatomy/cover.png">
+<meta name="twitter:image:alt" content="Colliding Keybindings One of the oldest Zellij problem was the &ldquo;colliding keybindings&rdquo; issue. Where Zellij would take up a keyboard shortcut that an app running inside it would be listening for. For example, Zellij uses the Ctrl o shortcut to enter Session mode, and vim uses the same shortcut to jump forward in the user&rsquo;s jumplist.
+While this can be mitigated with the Zellij Locked mode, to temporarily lock the Zellij interface, or by remapping the colliding keybindings - these have only ever been stop-gap solutions.">
+<meta name="twitter:image:width" content="1200">
+<meta name="twitter:image:height" content="630">
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Zellij Development Log 1 ">
+<meta property="og:description" content="Colliding Keybindings One of the oldest Zellij problem was the &amp;ldquo;colliding keybindings&amp;rdquo; issue. Where Zellij would take up a keyboard shortcut that an app running inside it would be listening for. For example, Zellij uses the Ctrl o shortcut to enter Session mode, and vim uses the same shortcut to jump forward in the user&amp;rsquo;s jumplist.
+While this can be mitigated with the Zellij Locked mode, to temporarily lock the Zellij interface, or by remapping the colliding keybindings - these have only ever been stop-gap solutions." />
+<meta property="og:url" content="http://localhost:1313/blog/zellij-development-log-1/" />
+<meta property="og:site_name" content="Zellij Development Log 1" />
+<meta property="og:image" content="https://poor.dev/img/anatomy/cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Colliding Keybindings One of the oldest Zellij problem was the &ldquo;colliding keybindings&rdquo; issue. Where Zellij would take up a keyboard shortcut that an app running inside it would be listening for. For example, Zellij uses the Ctrl o shortcut to enter Session mode, and vim uses the same shortcut to jump forward in the user&rsquo;s jumplist.
+While this can be mitigated with the Zellij Locked mode, to temporarily lock the Zellij interface, or by remapping the colliding keybindings - these have only ever been stop-gap solutions."/>
+
+<meta property="article:published_time" content="2024-08-19 00:00:00 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="">
+
+
+<div class="container center">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    poor.dev
+  </div>
+</a>
+
+    </div>
+    <div class="menu-trigger">menu</div>
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/">About</a></li>
+        
+      
+        
+          <li><a href="/projects/">Projects</a></li>
+        
+      
+        
+          <li><a href="/external_work/">External Work</a></li>
+        
+      
+        
+          <li><a href="/blog/">Blog</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/">About</a></li>
+      
+    
+      
+        <li><a href="/projects/">Projects</a></li>
+      
+    
+      
+        <li><a href="/external_work/">External Work</a></li>
+      
+    
+      
+        <li><a href="/blog/">Blog</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="http://localhost:1313/blog/zellij-development-log-1/">Zellij Development Log 1</a></h1>
+  <div class="post-meta">
+      
+    <span class="post-date">
+      2024-08-19
+    </span>
+    
+    
+    <span class="post-authorr">::
+      <a href="https://twitter.com/im_snif">Aram Drevekenin</a>
+    </span>
+    
+  </div>
+
+  
+
+  
+  
+  <img src="https://poor.dev/img/anatomy/cover.png" class="post-cover" />
+  
+  
+
+  <div class="post-content">
+    <h3 id="colliding-keybindings">Colliding Keybindings</h3>
+<p>One of the oldest Zellij problem was the &ldquo;colliding keybindings&rdquo; issue. Where Zellij would take up a keyboard shortcut that an app running inside it would be listening for. For example, Zellij uses the <code>Ctrl o</code> shortcut to enter <a href="https://zellij.dev/documentation/keybindings-modes"><code>Session</code> mode</a>, and vim uses the same shortcut to jump forward in the user&rsquo;s <a href="https://vimtricks.com/p/vim-jump-list/">jumplist</a>.</p>
+<p>While this can be mitigated with the Zellij <code>Locked</code> mode, to temporarily lock the Zellij interface, or by remapping the colliding keybindings - these have only ever been stop-gap solutions.</p>
+<p>This release, I set out to solve this issue once and for all. The full solution has recently been merged into main, here&rsquo;s a brief description:</p>
+<h4 id="the-full-solution">The Full Solution</h4>
+<p>Let&rsquo;s look at the current situation in order to better understand the problem:
+<img alt="base keybinds diagram" src="/img/devlog/keybindings-base.png"></p>
+<p>One of Zellij&rsquo;s strengths is its modal nature. The different Zellij modes (eg. the <code>Pane</code>, <code>Tab</code> and <code>Resize</code> modes) allow users to develop a mental modal regarding keybindings. The <code>n</code> key means &ldquo;new pane&rdquo; in <code>Pane</code> mode and &ldquo;new tab&rdquo; in <code>Tab</code> mode.</p>
+<p>The flip side of this coin is that using the above default keybindings, Zellij takes up a lot of key combinations at its base. Looking through the above diagram, Zellij would take up: <code>Ctrl g</code>, <code>Ctrl p</code>, <code>Ctrl t</code>, <code>Ctrl n</code>, <code>Ctrl h</code>, <code>Ctrl s</code>, <code>Ctrl o</code>, <code>Ctrl q</code>.</p>
+<p>It&rsquo;s possible to get around this problem by locking the interface with <code>Ctrl g</code>, in which case Zellij sends all keys except <code>Ctrl g</code> to the underlying terminal, but this can feel cumbersome after a while.</p>
+<p>The solution needed to be something that still preserves the modal nature of Zellij, takes up just one base key combination and does not feel cumbersome. Let&rsquo;s take a look at what I came up with:</p>
+<p><img alt="unlock-first keybinds diagram" src="/img/devlog/keybindings-unlock-first.png"></p>
+<p>In this solution, we would start out with a locked interface, having to <code>Unlock</code> it by pressing <code>Ctrl g</code> in order to access the modes. The key shortcuts for the modes have their <code>Ctrl</code> prefix removed (eg. <code>Ctrl p</code> to change to <code>Pane</code> mode is now shortened to just <code>p</code>), for faster access.</p>
+<p>This solution preserves the logical structure of the Zellij modes (<code>Pane</code> - keybindings related to panes, <code>Tab</code> - keybindings related to tabs, etc.) while still only taking up one shortcut in the base mode. It was adopted from several similar implementations by the community, most notably one described in
+this <a href="https://shoukoo.github.io/blog/zellij-love-neovim/">great post</a>.</p>
+<h4 id="the-implementation">The Implementation</h4>
+<p>So I decided to implement this solution natively in Zellij, with a few important requirements:</p>
+<ol>
+<li>It should be opt-in - many users do not have this problem and love the way things are now!</li>
+<li>The UI should natively support this solution, clarifying to users the &ldquo;breadcrumbs&rdquo; of how they got to their current mode</li>
+<li>Zellij should also allow remapping the leader keys (<code>Ctrl</code> and <code>Alt</code>) for both of these presets: unlock-first and default/classic.</li>
+<li>Zellij should support multiple-modifiers for these leader keys</li>
+</ol>
+<h5 id="create-an-unlock-first-preset">Create an &ldquo;unlock-first&rdquo; preset</h5>
+<p>With some configuration, this solution can be implemented without any changes to the Zellij code. So the first thing I did was create this keybinding &ldquo;preset&rdquo; (and start working with it myself to make sure it&rsquo;s comfortable!). It can now be found <a href="https://github.com/zellij-org/zellij/blob/main/default-plugins/configuration/src/main.rs#L1174-L1338">here</a>.</p>
+<p>Personally I can say that after just a few short days of working this way, I find it vastly preferable to the default (even though I personally never experienced colliding keybindings) and it&rsquo;s now hard for me to go back. But there was still a lot more work to do before the implementation was done.</p>
+<h5 id="allow-changing-runtime-config-reconfigure">Allow Changing Runtime Config (&ldquo;reconfigure&rdquo;)</h5>
+<p>Now that I implemented this solution with some configuration, the next step would be allowing the user to opt-in to this configuration. This should be done in-app, without having to paste anything from the web - so I needed to create a &ldquo;configuration&rdquo; window which would allow toggling this keybinding &ldquo;preset&rdquo;. In Zellij, we develop UIs through the plugin system, so I created a new plugin called &ldquo;configuration&rdquo;, and created a new <code>reconfiure</code> plugin API to give it this functionality.</p>
+<p>The new plugin looks like this:
+&lt;TODO: configuration screenshot&gt;</p>
+<p>The new plugin API behaves like this:</p>
+<ul>
+<li>By default, only changes &ldquo;runtime&rdquo; configuration, allowing the user to try out the different keybinding presets before saving</li>
+<li>If specified, will save the configuration to disk - backing up the current configuration file</li>
+</ul>
+<p>The upshot of the above API (behind the new &ldquo;RebindKeys&rdquo; user permission) is that it opens the door for plugins to create all sorts of macro/shortcut managers - temporarily binding keys to user defined actions and clearing them as needed.</p>
+<p>While accessible for existing users looking for a solution to this problem, new users will have a hard time finding out about this option. I would guess many of them will not even know their colliding keybindings problem even has a solution.</p>
+<p>For this reason, I decided to run the configuration window - slightly adjusted to become a first-run wizard - on first run. The wizard will only run if there was no configuration file previously written to disk - and if the configuration file location is writeable - preventing uncomfortable accidents. This is how it will look:
+&lt;TODO: wizard screenshot&gt;</p>
+<h5 id="adjust-the-ui">Adjust the UI</h5>
+<p>Now that I implemented the new functionality as well as an ability to toggle it at runtime and save it permanently to the configuration file through the application, it&rsquo;s time to have the Zellij UI reflect these changes. Currently, the UI looks like this:
+&lt;TODO: image of the old Zellij UI&gt;</p>
+<p>The important things we need to keep:</p>
+<ol>
+<li>It&rsquo;s always clear what the user can do in the mode they are in</li>
+<li>It&rsquo;s always clear how the user got to the mode they are in</li>
+<li>It&rsquo;s always clear how to perform the actions that will change modes or do what the user wants</li>
+</ol>
+<p>So after some iterations, I came up with this new UI (that even takes less space than the old one):
+&lt;TODO: UI for default mode&gt;</p>
+<p>And this is how it would look for our new &ldquo;unlock-first&rdquo; keybinding preset:
+&lt;TODO: UI for non-colliding&gt;</p>
+<h5 id="addendum-allow-binding-keys-with-multiple-modifiers">Addendum: Allow binding keys with multiple-modifiers</h5>
+<p>One last addition I felt was necessary in the context of this feature was to allow for further configurability by allowing users to change the leader keys. Currently, the &ldquo;mode leader key&rdquo; is by default <code>Ctrl</code> (We press <code>Ctrl g</code> to lock/unlock and in the default keybinding preset the different keymodes are prefixed with <code>Ctrl</code>). We have a secondary &ldquo;quicknav&rdquo; key in <code>Alt</code> - which while it usually does not collide, can cause some trouble with certain macos terminal emulators.</p>
+<p>So to allow for maximum flexibility, I decided to implement a more advanced STDIN parsing protocol. I found that the most prevalent one these days is the Kitty Keyboard Protocol (TODO: link) and decided to implement it.</p>
+<p>Along with having Zellij support it (assuming the controlling terminal supports it), I implemented support for it in our configuration plugin:
+&lt;TODO: gif of changing leader keys&gt;</p>
+
+  </div>
+  
+  <div class="pagination">
+    <div class="pagination__title">
+      <span
+        class="pagination__title-h"></span>
+    </div>
+  </div>
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+</footer>
+
+<script src="http://localhost:1313/assets/main.js"></script>
+
+  
+</div>
+
+</body>
+</html>

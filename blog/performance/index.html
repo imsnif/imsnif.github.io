@@ -92,15 +92,11 @@
         
       
         
-          <li><a href="/projects/">Projects</a></li>
+          <li><a href="/blog/">Blog</a></li>
         
       
         
           <li><a href="/external_work/">External Work</a></li>
-        
-      
-        
-          <li><a href="/blog/">Blog</a></li>
         
       
       
@@ -116,15 +112,11 @@
       
     
       
-        <li><a href="/projects/">Projects</a></li>
+        <li><a href="/blog/">Blog</a></li>
       
     
       
         <li><a href="/external_work/">External Work</a></li>
-      
-    
-      
-        <li><a href="/blog/">Blog</a></li>
       
     
     
@@ -169,7 +161,7 @@
 <p>The code samples in this post are simplified versions there to illustrate the examples we&rsquo;re talking about. Because Zellij is a functioning application, the actual code tends to be more involved and include details that would be confusing if included verbatim. In each code sample provided here, I also provide a link to the real world version for those who&rsquo;d like to go deeper.</p>
 <p>The &ldquo;Links&rdquo; section below also contains direct links to the pull requests implementing the changes discussed in this post.</p>
 <h1 id="application-and-problem-description">Application and problem description</h1>
-<p><img src="/img/performance/multiplexer.png" alt="multiplexer architecture diagram - this is a visualization of what&amp;rsquo;s explained below"></p>
+<p><img alt="multiplexer architecture diagram - this is a visualization of what&rsquo;s explained below" src="/img/performance/multiplexer.png"></p>
 <p>Zellij is a terminal multiplexer.
 In simplified terms, it&rsquo;s an application running &ldquo;between&rdquo; your <a href="https://poor.dev/blog/terminal-anatomy/">terminal emulator</a> (eg. Alacritty, iterm2, Konsole, etc.) and shell.</p>
 <p>It allows you to create several &ldquo;tabs&rdquo; and &ldquo;panes&rdquo;, as well as close your terminal emulator and later re-attach to the same session from a new window as long as Zellij keeps running in the background.</p>

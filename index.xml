@@ -4,64 +4,51 @@
     <title>Hi there! on poor.dev</title>
     <link>https://poor.dev/</link>
     <description>Recent content in Hi there! on poor.dev</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Tue, 02 Nov 2021 09:00:00 +0200</lastBuildDate><atom:link href="https://poor.dev/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 30 Oct 2024 09:00:00 +0200</lastBuildDate>
+    <atom:link href="https://poor.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Why Zellij?</title>
+      <link>https://poor.dev/blog/why-zellij/</link>
+      <pubDate>Wed, 30 Oct 2024 09:00:00 +0200</pubDate>
+      <guid>https://poor.dev/blog/why-zellij/</guid>
+      <description>The story of Zellij and its creation.</description>
+    </item>
     <item>
       <title>Anatomy of a Terminal Emulator</title>
       <link>https://poor.dev/terminal-anatomy/</link>
       <pubDate>Tue, 02 Nov 2021 09:00:00 +0200</pubDate>
-      
       <guid>https://poor.dev/terminal-anatomy/</guid>
       <description>How does a terminal emulator work? What are ANSI escape codes? Understanding terminal internals for development, fun and mischief.</description>
     </item>
-    
     <item>
       <title>Anatomy of a Terminal Emulator</title>
       <link>https://poor.dev/blog/terminal-anatomy/</link>
       <pubDate>Tue, 02 Nov 2021 09:00:00 +0200</pubDate>
-      
       <guid>https://poor.dev/blog/terminal-anatomy/</guid>
       <description>How does a terminal emulator work? What are ANSI escape codes? Understanding terminal internals for development, fun and mischief.</description>
     </item>
-    
     <item>
       <title>Improving the Performance of our Rust app</title>
       <link>https://poor.dev/blog/performance/</link>
       <pubDate>Mon, 19 Jul 2021 09:00:00 +0200</pubDate>
-      
       <guid>https://poor.dev/blog/performance/</guid>
       <description>A writeup of our journey to improve the performance of Zellij</description>
     </item>
-    
     <item>
       <title>Implementing a job queue in Rust</title>
       <link>https://poor.dev/blog/what-job-queue/</link>
       <pubDate>Wed, 30 Oct 2019 20:00:00 +0200</pubDate>
-      
       <guid>https://poor.dev/blog/what-job-queue/</guid>
-      <description>I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here</description>
+      <description>&lt;p&gt;I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it &lt;a href=&#34;https://github.com/imsnif/bandwhich&#34;&gt;here&lt;/a&gt;&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>External work</title>
       <link>https://poor.dev/external_work/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://poor.dev/external_work/</guid>
-      <description># A talk I gave at Rust Linz Here&amp;rsquo;s a recording of a talk I gave at the virtual Rust Linz meetup. The talk is about Zellij (then called Mosaic).
-# Adding package-lock.json support to yarn Back when I worked a lot in the javascript space, I thought it would be great if the then two major package managers supported each other&amp;rsquo;s lockfile format. This is a post I wrote after implementing support for npm&amp;rsquo;s package-lock.</description>
+      <description>&lt;h1 id=&#34;-how-to-get-users-for-your-open-source-projecthttpswwwyoutubecomwatchvzbte_zlf_yi&#34;&gt;# &lt;a href=&#34;https://www.youtube.com/watch?v=zBtE_zLF_yI&#34;&gt;How to get users for your open source project&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;A recording of a talk I gave at an OpenSUSE meetup.&lt;/p&gt;&#xA;&lt;h1 id=&#34;-developing-webassembly-rust-plugins-for-zellijhttpswwwyoutubecomwatchvpgnicq8rtxk&#34;&gt;# &lt;a href=&#34;https://www.youtube.com/watch?v=pgNIcQ8rTXk&#34;&gt;Developing WebAssembly Rust plugins for Zellij&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;A recording of a talk I gave at RustLab Florence 2023.&lt;/p&gt;&#xA;&lt;h1 id=&#34;-interview-of-aram-the-maintainer-of-zellijhttpswwwyoutubecomwatchvvz_lexpnd4o&#34;&gt;# &lt;a href=&#34;https://www.youtube.com/watch?v=VZ_lEXPnD4o&#34;&gt;Interview of Aram the maintainer of Zellij&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;A long form interview of me for Bedroom Builds.&lt;/p&gt;&#xA;&lt;h1 id=&#34;-various-blog-posts-about-zellij-releaseshttpszellijdevnews&#34;&gt;# &lt;a href=&#34;https://zellij.dev/news/&#34;&gt;Various blog posts about Zellij releases&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;When there&amp;rsquo;s a major Zellij release, I blog about it on the Zellij site.&lt;/p&gt;</description>
     </item>
-    
-    <item>
-      <title>Projects</title>
-      <link>https://poor.dev/projects/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://poor.dev/projects/</guid>
-      <description># bandwhich Bandwhich was my first major Rust project. My main goal with it was to create a tool that would be trivial to use, providing useful information for network veterans and novice computer users alike.
-My favorite feature about it is that the UI changes when the user expands their terminal window: showing more information (additional tables and additional columns in each table) if there&amp;rsquo;s enough room for it.</description>
-    </item>
-    
   </channel>
 </rss>
