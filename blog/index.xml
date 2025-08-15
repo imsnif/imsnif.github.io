@@ -41,7 +41,7 @@
       <link>https://poor.dev/blog/what-job-queue/</link>
       <pubDate>Wed, 30 Oct 2019 20:00:00 +0200</pubDate>
       <guid>https://poor.dev/blog/what-job-queue/</guid>
-      <description>&lt;p&gt;I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it &lt;a href=&#34;https://github.com/imsnif/bandwhich&#34;&gt;here&lt;/a&gt;&lt;/p&gt;</description>
+      <description>I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here</description>
     </item>
   </channel>
 </rss>

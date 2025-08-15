@@ -41,14 +41,14 @@
       <link>https://poor.dev/blog/what-job-queue/</link>
       <pubDate>Wed, 30 Oct 2019 20:00:00 +0200</pubDate>
       <guid>https://poor.dev/blog/what-job-queue/</guid>
-      <description>&lt;p&gt;I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it &lt;a href=&#34;https://github.com/imsnif/bandwhich&#34;&gt;here&lt;/a&gt;&lt;/p&gt;</description>
+      <description>I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here</description>
     </item>
     <item>
       <title>External work</title>
       <link>https://poor.dev/external_work/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://poor.dev/external_work/</guid>
-      <description>&lt;h1 id=&#34;-how-to-get-users-for-your-open-source-projecthttpswwwyoutubecomwatchvzbte_zlf_yi&#34;&gt;# &lt;a href=&#34;https://www.youtube.com/watch?v=zBtE_zLF_yI&#34;&gt;How to get users for your open source project&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;A recording of a talk I gave at an OpenSUSE meetup.&lt;/p&gt;&#xA;&lt;h1 id=&#34;-developing-webassembly-rust-plugins-for-zellijhttpswwwyoutubecomwatchvpgnicq8rtxk&#34;&gt;# &lt;a href=&#34;https://www.youtube.com/watch?v=pgNIcQ8rTXk&#34;&gt;Developing WebAssembly Rust plugins for Zellij&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;A recording of a talk I gave at RustLab Florence 2023.&lt;/p&gt;&#xA;&lt;h1 id=&#34;-interview-of-aram-the-maintainer-of-zellijhttpswwwyoutubecomwatchvvz_lexpnd4o&#34;&gt;# &lt;a href=&#34;https://www.youtube.com/watch?v=VZ_lEXPnD4o&#34;&gt;Interview of Aram the maintainer of Zellij&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;A long form interview of me for Bedroom Builds.&lt;/p&gt;&#xA;&lt;h1 id=&#34;-various-blog-posts-about-zellij-releaseshttpszellijdevnews&#34;&gt;# &lt;a href=&#34;https://zellij.dev/news/&#34;&gt;Various blog posts about Zellij releases&lt;/a&gt;&lt;/h1&gt;&#xA;&lt;p&gt;When there&amp;rsquo;s a major Zellij release, I blog about it on the Zellij site.&lt;/p&gt;</description>
+      <description># How to get users for your open source project A recording of a talk I gave at an OpenSUSE meetup.&#xA;# Developing WebAssembly Rust plugins for Zellij A recording of a talk I gave at RustLab Florence 2023.&#xA;# Interview of Aram the maintainer of Zellij A long form interview of me for Bedroom Builds.&#xA;# Various blog posts about Zellij releases When there&amp;rsquo;s a major Zellij release, I blog about it on the Zellij site.</description>
     </item>
   </channel>
 </rss>
