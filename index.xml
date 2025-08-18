@@ -6,8 +6,15 @@
     <description>Recent content in Hi there! on poor.dev</description>
     <generator>Hugo</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 30 Oct 2024 09:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 18 Aug 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://poor.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Terminal sessions you can bookmark: Building Zellij&#39;s web client</title>
+      <link>https://poor.dev/blog/building-zellij-web-terminal/</link>
+      <pubDate>Mon, 18 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>https://poor.dev/blog/building-zellij-web-terminal/</guid>
+      <description>How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way.</description>
+    </item>
     <item>
       <title>Why Zellij?</title>
       <link>https://poor.dev/blog/why-zellij/</link>
@@ -32,7 +39,7 @@
     <item>
       <title>Improving the Performance of our Rust app</title>
       <link>https://poor.dev/blog/performance/</link>
-      <pubDate>Mon, 19 Jul 2021 09:00:00 +0200</pubDate>
+      <pubDate>Sun, 18 Jul 2021 09:00:00 +0200</pubDate>
       <guid>https://poor.dev/blog/performance/</guid>
       <description>A writeup of our journey to improve the performance of Zellij</description>
     </item>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Terminal sessions you can bookmark: Building Zellij&#39;s web client :: poor.dev</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="description" content="How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way."/>
+<meta name="keywords" content=""/>
+<meta name="robots" content="noodp"/>
+
+<link rel="canonical" href="https://poor.dev/blog/building-zellij-web-terminal/" />
+
+
+<link rel="stylesheet" href="https://poor.dev/style.css">
+
+
+<link rel="stylesheet" href="https://poor.dev/assets/style.css">
+
+  <link rel="stylesheet" href="https://poor.dev/assets/green.css">
+
+
+
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://poor.dev/img/apple-touch-icon-144-precomposed.png">
+
+<link rel="shortcut icon" href="https://poor.dev/favicon.ico">
+
+
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Terminal sessions you can bookmark: Building Zellij&#39;s web client " />
+<meta name="twitter:description" content="How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way." />
+<meta name="twitter:site" content="https://poor.dev/" />
+<meta name="twitter:creator" content="Aram Drevekenin" />
+<meta name="twitter:image" content="https://poor.dev/img/web-terminal/cover.png">
+<meta name="twitter:image:alt" content="How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way.">
+<meta name="twitter:image:width" content="1200">
+<meta name="twitter:image:height" content="630">
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Terminal sessions you can bookmark: Building Zellij&#39;s web client ">
+<meta property="og:description" content="How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way." />
+<meta property="og:url" content="https://poor.dev/blog/building-zellij-web-terminal/" />
+<meta property="og:site_name" content="Terminal sessions you can bookmark: Building Zellij&#39;s web client" />
+<meta property="og:image" content="https://poor.dev/img/web-terminal/cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way."/>
+
+<meta property="article:published_time" content="2025-08-18 00:00:00 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="">
+
+
+<div class="container center">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    poor.dev
+  </div>
+</a>
+
+    </div>
+    <div class="menu-trigger">menu</div>
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/blog/">Blog</a></li>
+        
+      
+        
+          <li><a href="/external_work/">External Work</a></li>
+        
+      
+        
+          <li><a href="https://github.com/imsnif">GitHub</a></li>
+        
+      
+        
+          <li><a href="https://www.linkedin.com/in/aram-drevekenin-b620235b/">LinkedIn</a></li>
+        
+      
+        
+          <li><a href="mailto:aram@poor.dev">Contact</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/blog/">Blog</a></li>
+      
+    
+      
+        <li><a href="/external_work/">External Work</a></li>
+      
+    
+      
+        <li><a href="https://github.com/imsnif">GitHub</a></li>
+      
+    
+      
+        <li><a href="https://www.linkedin.com/in/aram-drevekenin-b620235b/">LinkedIn</a></li>
+      
+    
+      
+        <li><a href="mailto:aram@poor.dev">Contact</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://poor.dev/blog/building-zellij-web-terminal/">Terminal sessions you can bookmark: Building Zellij&rsquo;s web client</a></h1>
+  <div class="post-meta">
+      
+    <span class="post-date">
+      2025-08-18
+    </span>
+    
+    
+    <span class="post-authorr">::
+      <a href="https://hachyderm.io/@imsnif">Aram Drevekenin</a>
+    </span>
+    
+  </div>
+
+  
+
+  
+  
+  <img src="/img/web-terminal/cover.png" class="post-cover" alt="A graphical diagram of a browser and its websocket connections to the Zellij webserver."/>
+  
+  
+
+  <div class="post-content">
+    <p><a href="https://zellij.dev">Zellij</a> is a terminal workspace and multiplexer. One of the unique traits of terminal multiplexers is their ability to keep sessions alive in the background without a terminal attached to them. In the <a href="https://zellij.dev/news/web-client-multiple-pane-actions/">recent Zellij version</a> we released a built-in web client, allowing users to attach to these sessions from the browser - essentially making a dedicated terminal application optional.</p>
+<p>In this post we&rsquo;re going to take a look at how we built the Zellij Web Terminal: which technologies we used, how we architected the solution and some challenges we faced along the way.</p>
+<h2 id="what-we-have">What we have</h2>
+<p>Keeping sessions alive in the background involves a client/server architecture. The client runs in the user&rsquo;s terminal like any other program and communicates over IPC with a server holding the state of the terminal session (open programs, pane and tab layout, etc.)</p>
+<p>When Zellij first starts, the client spawns a new server process and daemonizes it so that it keeps running independently in the background. The client passes user input (keystrokes and mouse events) to the server, and the server passes render instructions to the client. When the client detaches from the server, the server remains alive until the client connects again.</p>
+<h2 id="the-goal">The Goal</h2>
+<p>To allow the browser to act as a Zellij client, we would need:</p>
+<ol>
+<li>A terminal emulator able to run inside the browser</li>
+<li>A web-server able to both serve this emulator and interact with the Zellij server</li>
+</ol>
+<h2 id="architecting-the-solution">Architecting the solution</h2>
+<p><img alt="architecture diagram - showing the many-to-many relationship between the Zellij web server and terminal sessions" src="/img/web-terminal/architecture.png"></p>
+<p>We elected to have a single web-server per machine, able to serve multiple sessions to multiple clients. Reusing the Zellij client code per connection, serving as a translation layer between the browser&rsquo;s websockets and the Zellij server&rsquo;s IPC channels. This would mean that there&rsquo;s only one web-server per machine - making administration easier while still allowing multiple-session operations per browser client.</p>
+<p>Since browser clients - through the web-server - will be connected to the same IPC channels as terminal clients, they appear as regular users inside a terminal session: blurring the distinction between the two user interfaces.</p>
+<h2 id="building-the-web-server">Building the web server</h2>
+<p><img alt="web-server diagram - demonstrating the relationship between the browser and the Zellij web server" src="/img/web-terminal/web-server-diagram.png"></p>
+<h4 id="url-scheme">URL scheme</h4>
+<p>Zellij sessions are namespaced: their names being unique per the machine they are running on. When integrating with web technologies, we get an opportunity: we can tie this uniqueness to our URL scheme. Meaning that a session called &ldquo;backend-code&rdquo; will always be accessible through <code>https://127.0.0.1/backend-code</code>. Here&rsquo;s how it works:</p>
+<ol>
+<li>If we enter a session&rsquo;s URL in our browser and the session is running, we attach to it - viewing and interacting with its running processes.</li>
+<li>If the session is not currently running but has existed in the past (eg. before a reboot) we <a href="https://zellij.dev/documentation/session-resurrection.html">resurrect it</a>: Zellij will re-create this session for us from its serialized metadata so that we can keep working where we left off.</li>
+<li>If this is a completely new session, Zellij creates a session with this name and drops us into it.</li>
+</ol>
+<p>This has the effect of essentially giving our terminal a URL bar: we can bookmark entire sessions (eg. <code>prod</code>, <code>frontend</code>, <code>backend</code>), have a one-click peak into a running logfile or even be more creative and bookmark a session that atomically opens our <code>$EDITOR</code> pointed to a specific file (maybe <code>shopping-list.md</code> or <code>TODO</code>).</p>
+<h4 id="connection-and-bi-directional-communication">Connection and bi-directional communication</h4>
+<p>The initial handshake between web-client and server is performed through http(s). In this handshake, the client authenticates itself with a special token (generated manually by the user through Zellij - more on the security measures below). This handshake also serves to establish which session the client will initially connect to. Using the URL path as explained above.</p>
+<p>Once the client is authenticated and the connection established, two websocket channels are established: a terminal channel and a control subchannel.</p>
+<p>The terminal channel is used by the server to send <code>STDOUT</code> bytes to the client (essentially <a href="https://poor.dev/blog/terminal-anatomy/">ANSI instructions</a> representing renders) and by the client to send <code>STDIN</code> bytes to the server (keypresses and mouse events). The control subchannel is used by the client side to send window resizes to the server and by the server side to send configuration changes, log messages and switch-session instructions to the client.</p>
+<p>The reason these two are separated is two-fold: first so that they don&rsquo;t end up blocking each other and second as a performance consideration to allow the potentially-heavy-throughput <code>STDOUT</code> not to be serialized/deserialized to distinguish it from control messages. We initially thought this would also allow us to apply backpressure from the browser all the way to the terminal application in order to batch up messages until they are fully processed, but this ended up not being necessary (as this is done well enough on the <a href="https://poor.dev/blog/performance/">Zellij application side</a> before it reaches the web server).</p>
+<h4 id="security-model">Security model</h4>
+<p>Since terminals are a sensitive interface to any machine, we were conscious about including built-in security measures with the solution. To log in, users need to generate a login-token from within a Zellij session (either from the command-line or from the Zellij UI).</p>
+<p>Special care has been taken for this token never to be saved in its clear form in any storage. On the server-side, it is hashed and kept in a local SQLite database where it cannot be retrieved, only revoked. On the client-side, it is initially sent through the POST parameters of the handshake and then exchanged for a temporary session-token. This session-token is saved as an &ldquo;http only&rdquo; cookie so that the client-side code cannot access it. On the server side it is read from the http-headers.</p>
+<p>The Zellij web-server enforces the use of HTTPS with a user-supplied certificate when listening on external interfaces. HTTP is only allowed when listening on localhost. We believe this is a reasonable compromise between security and user-friendliness. Allowing users to try the web capabilities locally first without forcing them to create an HTTPS certificate, but requiring one for terminal traffic passing over the wire.</p>
+<p>Authenticated users are considered trusted, since by definition they have the same permissions and access as the web-server itself.</p>
+<h4 id="server-side-technologies">Server side technologies</h4>
+<p>Since Zellij is written in Rust, we naturally decided to use Rust to develop the web-server as well.</p>
+<p>We chose <a href="https://docs.rs/axum/latest/axum/"><code>axum</code></a> as our webserver because we liked its mix-and-match approach - allowing us to plug in custom technology implementations and middleware (eg. the tower ecosystem for cookie and CORS handling), or use its built-in options when possible. We liked that it integrates seamlessly with tokio (our async runtime) and that it provides a &ldquo;native&rdquo; websocket implementation (using tokio-tungstenite under the hood). We also liked its declarative rather than macro-like routing system, even though we believe this last is mostly an aesthetic choice.</p>
+<p>With <code>axum</code>, our web routes look like this (simplified):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="kd">let</span><span class="w"> </span><span class="n">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Router</span>::<span class="n">new</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">&#34;/ws/control&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">any</span><span class="p">(</span><span class="n">ws_handler_control</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">&#34;/ws/terminal&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">any</span><span class="p">(</span><span class="n">ws_handler_terminal</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">route_layer</span><span class="p">(</span><span class="n">middleware</span>::<span class="n">from_fn</span><span class="p">(</span><span class="n">auth_middleware</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">get</span><span class="p">(</span><span class="n">serve_html</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">&#34;/{session}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">get</span><span class="p">(</span><span class="n">serve_html</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">&#34;/assets/{*path}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">get</span><span class="p">(</span><span class="n">get_static_asset</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="n">with_state</span><span class="p">(</span><span class="n">state</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Here we are able to protect the websocket routes (them being the ones who actually end up creating, attaching and communicating with the Zellij sessions) with an authentication middleware, while serving static assets in routes not protected by authentication.</p>
+<p>We chose <a href="https://github.com/rustls/rustls"><code>rustls</code></a> for serving the client with HTTPS rather than relying on openssl. Elsewhere in the app we made the opposite choice and found that this creates a great deal of complexity when packaging Zellij for third-parties (eg. linux distributions and crates.io). We hope to use this decision as a crutch to slowly migrate the rest of the app to do the same, rather than doubling-down on a decision that ended up causing us trouble. The trade-off is mostly binary-size, but in this day and age we believe this is not an issue in the vast majority of environments.</p>
+<p>For static assets, we use rust&rsquo;s <a href="https://docs.rs/include_dir/latest/include_dir/"><code>include_dir!</code></a> macro, packaging them as part of the executable. This is a must for us as a distributable application rather than a managed web-server.</p>
+<h5 id="handling-daemonization">Handling daemonization</h5>
+<p>Given our architecture, there are a few occasions in which we need to daemonize the web-server - it being implemented as a separate process that serves all sessions on the machine. We do this with the <a href="https://docs.rs/daemonize/latest/daemonize/"><code>daemonize</code></a> crate, which gives a split interface: one branch for the child (the web server instance in our case) and one branch for the parent (the process invoking the web-server - for example the Zellij command line or another Zellij process).
+One challenge in this approach is error reporting. If the web-server failed to start for one reason or another, we need to be able to let the invoking process know so that we can display a proper error to the user (eg. <code>Permission denied</code>, <code>Address in use</code>, etc.)</p>
+<p>To do this, we use the <code>privileged_action</code> method of the daemonize crate, allowing us to run code in the child process after the fork but before it detaches itself from the parent process&rsquo;s environment. In this method we run as much error prone operations as possible, creating the necessary entities (runtime, TLS config, TCP listener) for the child if successful. We then use a Unix pipe to let the parent process know the result of these operations (in the form of an <code>exit_code</code>) as well as provide a relevant textual error if the operation was not successful.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">fn</span> <span class="nf">daemonize_web_server</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="p">(</span><span class="cm">/* server_resources */</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Create pipes for parent-child communication
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="k">mut</span><span class="w"> </span><span class="n">exit_message_tx</span><span class="p">,</span><span class="w"> </span><span class="n">exit_message_rx</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pipe</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="k">mut</span><span class="w"> </span><span class="n">exit_status_tx</span><span class="p">,</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">exit_status_rx</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pipe</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">daemonization_outcome</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">daemonize</span>::<span class="n">Daemonize</span>::<span class="n">new</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="n">privileged_action</span><span class="p">(</span><span class="k">move</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>-&gt; <span class="nb">Result</span><span class="o">&lt;</span><span class="cm">/* server_resources */</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Perform error-prone operations before full daemonization:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="c1">// - Create async runtime
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="c1">// - Load TLS certificates
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="c1">// - Bind TCP listener
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="c1">// Convert all errors to strings for IPC
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="p">})</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="n">execute</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">daemonization_outcome</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Outcome</span>::<span class="n">Parent</span><span class="p">(</span><span class="nb">Ok</span><span class="p">(</span><span class="n">parent</span><span class="p">))</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Parent waits for child&#39;s initialization result
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="mi">1</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">exit_status_rx</span><span class="p">.</span><span class="n">read_exact</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">buf</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="n">exit_status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">i32</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Read error message if any
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BufReader</span>::<span class="n">new</span><span class="p">(</span><span class="n">exit_message_rx</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">reader</span><span class="p">.</span><span class="n">read_line</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">message</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Display result and exit with child&#39;s status
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">exit_status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;</span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">.</span><span class="n">trim</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;</span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">.</span><span class="n">trim</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">exit</span><span class="p">(</span><span class="n">exit_status</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">},</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Outcome</span>::<span class="n">Child</span><span class="p">(</span><span class="nb">Ok</span><span class="p">(</span><span class="n">child</span><span class="p">))</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">privileged_action_result</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">server_resources</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// Success: notify parent and continue as daemon
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">                </span><span class="n">exit_status_tx</span><span class="p">.</span><span class="n">write_all</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">writeln!</span><span class="p">(</span><span class="n">exit_message_tx</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;Web Server started&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">server_resources</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">},</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// Failure: send error to parent and exit
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">                </span><span class="n">exit_status_tx</span><span class="p">.</span><span class="n">write_all</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">writeln!</span><span class="p">(</span><span class="n">exit_message_tx</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">},</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">},</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h4 id="client-side-technologies">Client side technologies</h4>
+<p>The client-side includes a fully featured terminal: the excellent <a href="https://xtermjs.org/"><code>xterm.js</code></a>. xterm.js has been around for many years and is used among other places as the terminal emulator in VSCode. It is battle tested and feature rich. xterm.js performs most of the work on the client side (terminal rendering and user input), but we had to write some custom integrations to make it fit with our use-case.</p>
+<p>A prime example: at the time of writing xterm.js does not support mouse AnyEvent tracking, which Zellij heavily relies on. In this terminal mouse mode, mouse motions are sent to the terminal along with other events (eg. press and release). To work around this, we listen to the browser &ldquo;mousemove&rdquo; event, translate it to an ANSI instruction and send it to the server. Since mouse AnyEvent works with columns/rows rather than coordinates, we use an internal xterm.js function to make the translation. Not ideal, but works in a pinch.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="nx">terminal_element</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">&#34;mousemove&#34;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">buttons</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// this means no mouse buttons are pressed and this is just a mouse movement
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kd">let</span> <span class="p">{</span> <span class="nx">col</span><span class="p">,</span> <span class="nx">row</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">term</span><span class="p">.</span><span class="nx">_core</span><span class="p">.</span><span class="nx">_mouseService</span><span class="p">.</span><span class="nx">getMouseReportCoords</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">event</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">terminal_element</span>
+</span></span><span class="line"><span class="cl">        <span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nx">prev_col</span> <span class="o">!=</span> <span class="nx">col</span> <span class="o">||</span> <span class="nx">prev_row</span> <span class="o">!=</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">sendFunction</span><span class="p">(</span><span class="sb">`\x1b[&lt;35;</span><span class="si">${</span><span class="nx">col</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="sb">;</span><span class="si">${</span><span class="nx">row</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="sb">M`</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">prev_col</span> <span class="o">=</span> <span class="nx">col</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">prev_row</span> <span class="o">=</span> <span class="nx">row</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><p>Another example involves window titles. When working with a standard dedicated terminal application, it is often the case where the window title reflects the current working directory or the program name. This is done with an ANSI instruction called &ldquo;OSC 0&rdquo;. You can try it yourself: <code>echo -e &quot;\033]0;my awesome title\007&quot;</code> (note: you might want to add an <code>&amp;&amp; sleep 10</code> afterwards because some shell prompts will change it back immediately). Zellij uses this instruction to display both the session name and the title of the currently focused pane to the terminal. We would of course like this to also be the case for the browser - and more crucially, to the browser tab. To make this work, we intercept this instruction in the rendered bytes with a regex, changing the document.title to match:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="nx">wsTerminal</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">let</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">titleRegex</span> <span class="o">=</span> <span class="sr">/\x1b\]0;([^\x07\x1b]*?)(?:\x07|\x1b\\)/g</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nx">match</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">((</span><span class="nx">match</span> <span class="o">=</span> <span class="nx">titleRegex</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">data</span><span class="p">))</span> <span class="o">!==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">document</span><span class="p">.</span><span class="nx">title</span> <span class="o">=</span> <span class="nx">match</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></div><h4 id="why-not-typescript">Why not Typescript?</h4>
+<p>While our client-side implementation leans heavily toward simple no-dependency solutions, coming from a strongly typed language like Rust we appreciate the value of being able to define data types for our interfaces. Typescript could offer significant benefits for our use-case, especially with regards to the various websocket message types.</p>
+<p>On the other hand, Typescript comes with the heavy tax of an extra build-step. A tax particularly significant in our case since otherwise our client-side code does not have a build step at all.</p>
+<p>While we could have implemented the build-step as part of the Zellij build-system (using the excellent <a href="https://github.com/matklad/cargo-xtask">cargo xtask</a>), we were wary of the extra build complexity (the usual &ldquo;Are my changes failing because of issues in my code or in the build system?&rdquo;)</p>
+<p>We ultimately decided against it. Reasoning that since our client-side code is relatively small, the complexity of introducing another build-step is more error prone than not using types at all. Time will tell if we made the right choice, and we might revisit it again as our client-side code expands.</p>
+<h3 id="whats-next">What&rsquo;s next?</h3>
+<p>The Zellij web client is a small step forward in the larger scheme of things. It is a first-class interface into another medium.</p>
+<p>In the upcoming Zellij versions I plan to expand the web  interface to include native rendering of UI components. I plan to allow blending multiple Zellij sessions with full-fledged read/write permissions, blurring the distinction between different machines on the UI level. I plan to follow up with hosted solutions for multiplayer terminal sessions.</p>
+<p>If you are interested, the best way to follow along is to become a Zellij user and help build upon this infrastructure. We&rsquo;re just getting started.</p>
+<h2 id="please-sponsor-me-and-zellij-development-">Please Sponsor Me and Zellij Development ❤️</h2>
+<p>Zellij is developed and maintained as a labor of love, but love does not pay the bills.</p>
+<p>Zellij will always be free and open-source. Zellij will never contain ads or collect your data.</p>
+<p>If you are able, consider sponsoring the Zellij creator and lead developer with <a href="https://github.com/sponsors/imsnif">a recurring monthly donation</a>. There are Zellij stickers in it for you!</p>
+
+  </div>
+  
+  <div class="pagination">
+    <div class="pagination__title">
+      <span
+        class="pagination__title-h"></span>
+    </div>
+  </div>
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+</footer>
+
+<script src="https://poor.dev/assets/main.js"></script>
+
+  
+</div>
+
+</body>
+</html>
