@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   
-    <title>Anatomy of a Terminal Emulator :: poor.dev</title>
+    <title>Anatomy of a Terminal Emulator :: Aram Drevekenin - Terminal Developer &amp; Creator of Zellij</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
@@ -62,6 +62,152 @@
 
 
 
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "\"Anatomy of a Terminal Emulator\"",
+  "description": "\"How does a terminal emulator work? What are ANSI escape codes? Understanding terminal internals for development, fun and mischief.\"",
+  "image": "\"https://poor.dev/img/anatomy/cover.png\"",
+  "datePublished": "\"2021-11-02T09:00:00+02:00\"",
+  "dateModified": "\"2026-01-16T00:00:00Z\"",
+  "author": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "description": "Indie software developer specializing in terminal applications. Creator and lead maintainer of Zellij terminal multiplexer.",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ],
+    "knowsAbout": [
+      "Terminal Emulators",
+      "Rust Programming",
+      "Terminal Multiplexers",
+      "CLI Tools",
+      "Zellij"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ]
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "\"https://poor.dev/blog/terminal-anatomy/\""
+  },
+  "wordCount":  4016 ,
+  "articleBody": "\"Originally published November 2021. The terminal emulator fundamentals, ANSI escape codes, and development patterns covered in this comprehensive guide remain current and essential knowledge for terminal application development.\\nTo link to this post, it is advisable to use the preview URL: https://poor.dev/terminal-anatomy\\nThe terminal is a ubiquitous platform that has been fairly stable for many years. There are plenty of resources out there for understanding its inner workings, but most of them are either fairly arcane or offer deep knowledge about a very specific area. This post aims to bridge this gap by offering a gentle and broad introduction to the terminal emulator as a platform for development. If you\\u0026rsquo;re interested in how these concepts apply to building a real terminal application, check out how we built Zellij\\u0026rsquo;s web terminal.\\nWe\\u0026rsquo;ll talk about the different parts of the terminal and how they interact, build a small program to read input from the shell and understand how it\\u0026rsquo;s interpreted, discuss how to create a user interface in the terminal and finally see how we can use all of this to cause some mischief.\\nI\\u0026rsquo;ve used Rust for code examples, but tried to make them as simple and short as possible so that they\\u0026rsquo;ll also be comprehensible to non-Rust programmers. I also provided explanations of the relevant parts of the code. We refer to the workings of terminal emulators in a unix or unix-like system (eg. Linux and macOS). Some parts might also be relevant to other operating systems.\\nWhile this is aimed at those new to developing terminal applications, I tried to go into enough depth in certain areas to keep things interesting for old terminal hounds as well.\\nDifferent parts of the terminal In relation to the terminal emulator, one often hears terms such as \\u0026ldquo;the shell\\u0026rdquo; (or command-line) and pty. Let\\u0026rsquo;s talk a little about all of these and their relationship.\\nThe terminal emulator, as its name suggests, carries with it a lot of history. In this post though, we\\u0026rsquo;re going to concentrate on how things work today. I\\u0026rsquo;ve provided some links for those interested in how things came to be this way at the bottom of this article.\\nBoth the terminal emulator (eg. gnome terminal, alacritty, rxvt-unicode) and the shell (eg. bash, zsh, fish) are executable applications that run on our machine.\\nThe terminal emulator is a graphical application whose role it is to interpret data coming from the shell and display it on screen. This display is often textual but not always.\\nThe shell provides an interface to the operating system, allowing the user to interact with its file-system, run processes and often have access to basic scripting capabilities.\\nThese two programs are connected together by the pty (pseudoterminal) which provides a bi-directional asynchronous communication channel between the two. One channel of the pty represents the communication directed from the terminal emulator to the shell (STDIN) and the other channel refers to the communication directed from the shell to the terminal emulator (STDOUT). When a user types text into the terminal, it is sent to the shell through the pty\\u0026rsquo;s STDIN channel, and when the shell would like to display text to the user on their terminal emulator, it is sent to it through the pty\\u0026rsquo;s STDOUT channel.\\nThe pty has two sides (we will refer to them as \\u0026ldquo;primary\\u0026rdquo; and \\u0026ldquo;secondary\\u0026rdquo;, although the official documentation refers to them by other names). On the primary side is the terminal emulator, and on the secondary side is the shell - though conceivably any program that expects to be connected to a terminal can be opened on the pty\\u0026rsquo;s secondary side (eg. the terminal emulator can open \\u0026ldquo;vim\\u0026rdquo; or \\u0026ldquo;top\\u0026rdquo; directly on the secondary side of the pty when creating it).\\nLet\\u0026rsquo;s look at an example of how this whole system works:\\n\\u003c?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"no\\\"?\\u003e ls The terminal emulator starts, spawns a pty with the machine's default shell on its secondary side. The terminal emulator parses the data and displays it on screen The new process gets the desired data, sends it to the shell and terminates. The shell starts, sending its initial state to the terminal through the STDOUT side of the pty. The user types in text which is buffered in the PTY's STDIN line buffer. The user presses \\u0026lt;ENTER\\u0026gt; and the pty's STDIN line buffer is sent to the shell. The shell sends the data to the terminal through the STDOUT side of the pty The shell interprets the buffer, decides it needs to run a command and forks it to a new process. ls PTY stdin stdout TERMINAL EMULATOR SHELL \\u0026lt;ENTER\\u0026gt; ls -l \\u0026gt; forking... How does the terminal emulator interpret and display the data from the shell? When the shell sends text to the terminal, it uses a set of instructions haphazardly gathered over the years under the title \\u0026ldquo;ANSI escape codes\\u0026rdquo;. These are used when the shell needs to send anything that is more involved than clear text (eg. changing colors/styles or moving the cursor). To see how these work exactly, let\\u0026rsquo;s write a small Rust program that spawns a pty and starts the machine\\u0026rsquo;s default shell on its secondary side. Then we can see what the shell sends us.\\nfn read_from_fd(fd: RawFd) -\\u0026gt; Option\\u0026lt;Vec\\u0026lt;u8\\u0026gt;\\u0026gt; { unimplemented!() } fn spawn_pty_with_shell(default_shell: String) -\\u0026gt; RawFd { unimplemented!() } fn main() { let default_shell = std::env::var(\\u0026#34;SHELL\\u0026#34;) .expect(\\u0026#34;could not find default shell from $SHELL\\u0026#34;); let stdout_fd = spawn_pty_with_shell(default_shell); let mut read_buffer = vec![]; loop { match read_from_fd(stdout_fd) { Some(mut read_bytes) =\\u0026gt; { read_buffer.append(\\u0026amp;mut read_bytes); } None =\\u0026gt; { println!(\\u0026#34;{:?}\\u0026#34;, String::from_utf8(read_buffer).unwrap()); std::process::exit(0); } } } } Here we start by getting the path to the system\\u0026rsquo;s default shell from the SHELL environment variable and start it in a new process on the secondary side of a pty (in a function that we\\u0026rsquo;ll flesh out below).\\nThis function returns the STDOUT file descriptor of the primary side of the pty. We start reading from it in the read_from_fd function (which we\\u0026rsquo;ll also flesh out below). We read until there\\u0026rsquo;s no more data to read (presumably the process ended) and then we print out all the data we\\u0026rsquo;ve read.\\nLet\\u0026rsquo;s flesh out the spawn_pty_with_shell function:\\nuse nix::pty::forkpty; use nix::unistd::ForkResult; use std::os::unix::io::RawFd; use std::process::Command; fn spawn_pty_with_shell(default_shell: String) -\\u0026gt; RawFd { match forkpty(None, None) { Ok(fork_pty_res) =\\u0026gt; { let stdout_fd = fork_pty_res.master; // primary if let ForkResult::Child = fork_pty_res.fork_result { // I\\u0026#39;m the secondary part of the pty Command::new(\\u0026amp;default_shell) .spawn() .expect(\\u0026#34;failed to spawn\\u0026#34;); std::thread::sleep(std::time::Duration::from_millis(2000)); std::process::exit(0); } stdout_fd } Err(e) =\\u0026gt; { panic!(\\u0026#34;failed to fork {:?}\\u0026#34;, e); } } } forkpty is a libc function that forks the current process, starts a pty and places the child part of the fork on the secondary side of the pty. We use the excellent nix wrapper around the bare C function to deal with any unsafe code for us.\\nThe code on the Ok side of the match statement runs in both the parent process (our main program) and the child process. We distinguish between the two by the ForkResult, and so in the child process, we run the default shell, sleep for 2 seconds to let it load and then exit. In the parent process, we return the stdout file descriptor to the program so that it can read what information the child sends it.\\nNow, let\\u0026rsquo;s flesh out the read_from_fd function:\\nuse nix::unistd::read; fn read_from_fd(fd: RawFd) -\\u0026gt; Option\\u0026lt;Vec\\u0026lt;u8\\u0026gt;\\u0026gt; { // https://linux.die.net/man/7/pipe let mut read_buffer = [0; 65536]; let read_result = read(fd, \\u0026amp;mut read_buffer); match read_result { Ok(bytes_read) =\\u0026gt; Some(read_buffer[..bytes_read].to_vec()), Err(_e) =\\u0026gt; None, } } Here we accept the file descriptor that we got from the spawn_pty_with_shell function above. We send it to the read system call along with a mutable buffer. This will read up to that amount of bytes (65536 in our case), place them in the buffer we gave it, and return us the number of bytes read.\\nAssuming a successful read, we then allocate a vector from the read portion of our read_buffer and return it to our main program.\\nHere\\u0026rsquo;s the full source for this program\\nRunning this program, we get the following output:\\n^[(B^[[m\\\\r^[[KWelcome to fish, the friendly interactive shell\\\\r\\\\n^[]0;fish /home/aram^[[m^[[97m^[[46m⋊\\u0026gt;^[[m^[[33m ~^[[m^[[K^[[67C^[[38;2;85;85;85m10:21:15^[[m\\\\r^[[5C Almost readable, right? This is the initial output of my default shell, fish.\\nIt\\u0026rsquo;s plain text with a smattering of those \\u0026ldquo;ANSI escape codes\\u0026rdquo; we talked about at the beginning of this section. Let\\u0026rsquo;s take a dive and see how we as a terminal emulator would interpret it. Note that the ^[ character is used here for convenience to denote an ASCII escape character.\\n\\u003c?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"no\\\"?\\u003e ^[[2m⏎^[(B^[[m \\\\r⏎ \\\\r^[[KWelcome to fish, the friendly interactive shell\\\\r\\\\n^[[?2004h^[]0;fish /home/aram^[[30m^[(B^[[m^[[97m^[[46m⋊\\u0026gt;^[(B^[[m ^[[33m~^[(B^[[m ^[[K^[[67C^[[38;2;85;85;85m10:21:15^[(B^[[m\\\\r^[[72C\\\\r^[[5C\\\\r\\\\n^[[30m^[(B^[[m^[[30m^[(B^[[m^[[?2004l PARSER STATE ANSI/VT100 TERMINAL fish /home/aram 0x, 0y Print these characters Write in Bold Change charset to ASCII Reset All Styles Cursor to line start Clear line after cursor Cursor to next line start Change terminal title Foreground to bright white Background to cyan Foreground to yellow Cursor 67 forward Foreground to rgb(85, 85, 85) Move cursor 5 forward Current Action Foreground Color None None (Bold) Bright White Yellow rgb(85, 85, 85) Background Color None Cyan This is a slightly redacted output. The actual output given by the fish shell includes some repetitions and instructions that I felt weren\\u0026rsquo;t relevant to this post.\\nThis is a pretty simple example, but any textual interface that runs in the terminal - regardless of which language it was written in - works in this way.\\nOne can even send these instructions directly to one\\u0026rsquo;s own terminal using the echo command. Go ahead and try this out:\\necho -e \\u0026#34;I am some \\\\033[38;5;9mred text!\\u0026#34; \\u0026ldquo;033\\u0026rdquo; is the octal representation of the ASCII escape character.\\nJust for fun, let\\u0026rsquo;s look at a more involved example. Here\\u0026rsquo;s a big lump of text that was meticulously prepared just for this purpose:\\n[1H[J[8;20H[38;2;167;216;255m!_[B[2D|*`~-.,[B[7D|.-~^`[2;51H!_[B[2D|*~=-.,[B[7D|_,-\\u0026#39;`[14;12H!_[B[2D|*`--,[B[6D|.-\\u0026#39;[16;34H!_[B[2D|*`~-.,[B[7D|_,-~`[14;43H!_[B[2D|*`~-.,[B[7D|_.-\\u0026#34;`[11;20H[38;2;227;176;110m|[B[D|[5;51H|[B[D|[17;12H|[19;34H|[17;43H|[18;11H[38;2;190;97;107m/^\\\\[B[4D/ \\\\[B[6D/, \\\\[B[8D/#\\u0026#34; \\\\[B[10D/##_ _ \\\\[7;50H/^\\\\[B[4D/ \\\\[B[6D/, \\\\[B[8D/#\\u0026#34; \\\\[B[10D/##_ _ \\\\[18;42H[38;2;190;97;107m/^\\\\[B[4D/ \\\\[B[6D/, \\\\[B[8D/#\\u0026#34; \\\\[B[10D/##_ _ \\\\[22;25H[38;2;167;216;255m_____[B[8D0~{_ _ _}~0[B[9D| , |[B[7D| ((* |[B[7D| ` |[B[6D`-.-`[30;25H[38;2;227;176;110m_,--,_[B[7D/ | | \\\\[B[8D| | | |[B[8D| | \\u0026lt;\\u0026amp;\\u0026gt;[B[8D| | | |[B[8D| | | |[28;12H_[B[2D/+\\\\[B[4D|+|+|[B[5D|+|+|[B[5D|+|+|[B[5D^^^^^[28;43H_[B[2D/+\\\\[B[4D|+|+|[B[5D|+|+|[B[5D|+|+|[B[5D^^^^^[25;57H___[B[3D/+\\\\[B[3D|+|[B[3D|+|[B[3D^^^[11;45H[38;2;112;117;121m_[3C_[3C_[3C_[B[14D[ ]_[ ]_[ ]_[ ][12;15H_[3C_[3C_[3C_[3C_[13;14H[ ]_[ ]_[ ]_[ ]_[ ] |_=_-=_ - =_|[14;15H|_=_ =-_-_ = =_|[14;46H|=_= - |[15;18H_- _ |[15;50H= [] |[16;16H|= [] |[16;49H_- |[17;16H|_=- - |[17;46H|=_- |[18;16H|=_= - |[18;46H|_ - =[] |[19;7H_[19;15H_|_=- _ _ _| _[19;37H_[19;46H|=_- |[20;6H[ ][20;16H[ ]_[ ]_[ ]_[ ]_[ ]_[ ]_[20;47H[ ]=- |[21;7H|[21;17H_=-___=__=__- =-_ -=_[21;48H| _ [] |[22;6H_[3C_[3C_[3C_-_ =[22;37H_[3C_[3C_[3C_ - |\\\\[23;5H[ ]_[ ]_[ ]_[ ]=_[23;36H[ ]_[ ]_[ ]_[ ]=- | \\\\[24;5H|_=__-_=-_ =_|-=_[24;36H|_=-___-_ =-__|_ | \\\\[25;6H| _- =- |-_[25;37H|= _= | - |[3C\\\\[26;6H|= -_= |= _[26;37H|_-=_ |=_ |[3C|[27;6H| =_ - |_ = _[27;37H| =_ = = |=_- |[3C|[28;6H|-_=-[28;18H|=_ = |=_= -[28;49H| = |[3C|[29;6H|=_-[29;18H| -= |_=-[29;49H|=_ |[3C|[30;6H|=_[30;18H|= - -[30;37H|_=[30;49H| -_ |= |[31;6H| -[31;18H|-_=[31;37H|=_[31;49H|-=_ |_-/[32;6H|=_=[32;18H| =_=[32;37H|_-[32;49H|_ = |=/[33;6H| _[33;18H|= -[33;37H|=_=[33;49H|_=- |/[34;6H|=_ = | =_-_[34;37H| =_ | -_ |[35;6H|_=-_ |=_=[35;37H|=_= |=- |[36;1H[38;2;163;189;141m^^^^^^^^^^`^`^^`^`^`^^^\\u0026#34;\\u0026#34;\\u0026#34;\\u0026#34;\\u0026#34;\\u0026#34;\\u0026#34;\\u0026#34;^`^^``^^`^^`^^`^`^``^`^``^``^^ Let\\u0026rsquo;s see how the terminal emulator would interpret it:\\n\\u003c?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"no\\\"?\\u003e Cursor to viewport top RGB(0, 0, 0) 0x, 0y CURRENT LINE PARSER STATE ANSI/VT100 TERMINAL Black and white ASCII art taken from: https://www.asciiart.eu/buildings-and-places/castles\\nSince this sort of output is (pretty much) standardized across all terminal emulators, one could take the source of this animation and cat it into any terminal of sufficient size to get this same castle. Unfortunately, copy/pasting the text from above will not work, since the web is not very good at displaying ASCII escape characters. But have no fear, here\\u0026rsquo;s the raw source if you\\u0026rsquo;d like to play around with it.\\nANSI escape codes have many different types. But generally fall under CSI (Control Sequence Introducers), OSC (Operating System Commands) or direct escape sequences. Covering their grammar and operation is out of scope for this post, but if you\\u0026rsquo;d like to learn more about them there are some good links at the bottom of this post. If there\\u0026rsquo;s demand, I might write a separate article about them in the future.\\nDrawing a UI in the terminal There are numerous great UI libraries for developing textual terminal applications for lots of programming languages. Even if electing to use such a library, it\\u0026rsquo;s helpful to understand the underlying operations. Here are a few things to know about how they work.\\nSpecial character charset When we interpreted the fish shell output above, we saw the ^[(B instruction at its beginning. We described this as \\u0026ldquo;change charset to ASCII\\u0026rdquo;. Let\\u0026rsquo;s take a look at another charset commonly referred to as the \\u0026ldquo;special characters\\u0026rdquo; charset. We can switch to this charset with the ^[(0 instruction (or echo -e \\u0026quot;\\\\033(0\\u0026quot;), after which all text sent to the terminal emulator will be interpreted against that set instead of the standard ASCII.\\nThis set includes Box drawing characters which one can use in order to draw textual interfaces. Let\\u0026rsquo;s look at an example:\\n$ echo -e \\u0026#34;\\\\033(0lqqqk\\\\nx x\\\\nmqqqj\\u0026#34; Gives us:\\n┌───┐ │ │ └───┘ Once we switched to the \\u0026ldquo;special characters\\u0026rdquo; charset, the characters we entered were interpreted against the special characters table and so we were able to draw a box.\\nLet\\u0026rsquo;s look at a more involved example\\n$ echo -en \\u0026#34;\\\\033(0\\\\ lq \\\\033(BTests \\\\033(0qqqqqk lq lq \\\\033(BAssertion error\\\\033(0 qk\\\\n\\\\ x x x x x\\\\n\\\\ x x x x \\\\033(B! Should equal !\\\\033(0 x\\\\n\\\\ x \\\\033(B[ #1 Fail ]\\\\033(0 tqqqqqqqu x x\\\\n\\\\ l k x x x x \\\\033(BLeft: 50\\\\033(0 x\\\\n\\\\ x\\\\033(B Rerunning in 10s\\\\033(0 tqqqqqqu \\\\033(B#2 Fail\\\\033(0 x x x x\\\\n\\\\ m j x x x x \\\\033(BRight: 48\\\\033(0 x\\\\n\\\\ x \\\\033(B#3 Pass\\\\033(0 x x x x\\\\n\\\\ x x x x \\\\033(B[test.rs line 25]\\\\033(0 x\\\\n\\\\ x x x x x\\\\n\\\\ mqqqqqqqqqqqqqj mq mqqqqqqqqqqqqqqqqqqqj\\\\n\\u0026#34; Gives us:\\n┌─ Tests ─────┐ ┌─ ┌─ Assertion error ─┐ │ │ │ │ │ │ │ │ │ ! Should equal ! │ │ [ #1 Fail ] ├───────┤ │ │ ┌ ┐ │ │ │ │ Left: 50 │ │ Rerunning in 10s ├──────┤ #2 Fail │ │ │ │ └ ┘ │ │ │ │ Right: 48 │ │ #3 Pass │ │ │ │ │ │ │ │ [test.rs line 25] │ │ │ │ │ │ └─────────────┘ └─ └───────────────────┘ Here we switch back and forth from the ASCII to the special characters charset.\\nThe table of the characters one can use in this mode:\\nchar prints ` ◆ a ▒ b ␉ c ␌ d ␍ e ␊ f ° g ± h ␤ i ␋ j ┘ k ┐ l ┌ m └ n ┼ o ⎺ p ⎻ q ─ r ⎼ s ⎽ t ├ u ┤ v ┴ w ┬ x │ y ≤ z ≥ { π | ≠ } £ ~ · SIGWINCH - responsive UIs in the terminal In recent years, the web popularized \\u0026ldquo;responsive UIs\\u0026rdquo; - applications that change their interface depending on their window size.\\nI find that users often play around with the size of their terminal window - either in order to display it near other applications, or in order to display several terminal windows on the same screen at a time. We can use this paradigm and create a really good UX by not only fitting the application to the user\\u0026rsquo;s window, but also conditionally displaying a different UI depending on the window size.\\nTo do this, we can listen to the SIGWINCH signal. This signal is triggered every time a process\\u0026rsquo;s controlling terminal is resized.\\nHere\\u0026rsquo;s an example of a Rust program that changes its UI depending on the terminal window size:\\nuse nix::pty::Winsize; use signal_hook::{consts::signal::*, iterator::Signals}; use std::io::prelude::*; fn get_terminal_size() -\\u0026gt; (u16, u16) { // rows, columns use libc::ioctl; use libc::TIOCGWINSZ; let mut winsize = Winsize { ws_row: 0, ws_col: 0, ws_xpixel: 0, ws_ypixel: 0, }; unsafe { ioctl(1, TIOCGWINSZ, \\u0026amp;mut winsize) }; (winsize.ws_row, winsize.ws_col) } fn draw_rect(rows: u16, columns: u16, x: u16, y: u16, middle_text: \\u0026amp;str) { let top_and_bottom_edge = \\u0026#34;q\\u0026#34;.repeat(columns as usize - 2); let blank_middle = \\u0026#34; \\u0026#34;.repeat(columns as usize - 2); for y_index in y..y + rows { if y_index == y { print!( \\u0026#34;\\\\u{1b}[{};{}H\\\\u{1b}(0l{}k\\u0026#34;, y_index + 1, x, top_and_bottom_edge ); } else if y_index == (y + rows) - 1 { print!( \\u0026#34;\\\\u{1b}[{};{}H\\\\u{1b}(0m{}j\\u0026#34;, y_index + 1, x, top_and_bottom_edge ); } else { print!(\\u0026#34;\\\\u{1b}[{};{}H\\\\u{1b}(0x{}x\\u0026#34;, y_index + 1, x, blank_middle); } } print!( \\u0026#34;\\\\u{1b}(B\\\\u{1b}[{};{}H{}\\u0026#34;, y + rows / 2 + 1, x + (columns - middle_text.chars().count() as u16) / 2, middle_text ); } fn side_by_side_ui(rows: u16, columns: u16, left_text: \\u0026amp;str, right_text: \\u0026amp;str) { let left_rect_rows = rows; let left_rect_columns = columns / 2; let left_rect_x = 0; let left_rect_y = 0; let right_rect_rows = rows; let right_rect_columns = columns / 2; let right_rect_x = (columns / 2) + 1; let right_rect_y = 0; draw_rect( left_rect_rows, left_rect_columns, left_rect_x, left_rect_y, left_text, ); draw_rect( right_rect_rows, right_rect_columns, right_rect_x, right_rect_y, right_text, ); } fn top_and_bottom_ui(rows: u16, columns: u16, top_text: \\u0026amp;str, bottom_text: \\u0026amp;str) { let top_rect_rows = rows / 2; let top_rect_columns = columns; let top_rect_x = 0; let top_rect_y = 0; let bottom_rect_rows = rows / 2 + 1; let bottom_rect_columns = columns; let bottom_rect_x = 0; let bottom_rect_y = rows / 2; draw_rect( top_rect_rows, top_rect_columns, top_rect_x, top_rect_y, top_text, ); draw_rect( bottom_rect_rows, bottom_rect_columns, bottom_rect_x, bottom_rect_y, bottom_text, ); } fn draw_ui() { println!(\\u0026#34;\\\\u{1b}[H\\\\u{1b}[J\\u0026#34;); // clear screen println!(\\u0026#34;\\\\u{1b}[?25l\\u0026#34;); // hide cursor let primary_text = \\u0026#34;I am some arbitrary text\\u0026#34;; let secondary_text = \\u0026#34;Me too! Here\\u0026#39;s a shrug emoticon: ¯\\\\\\\\_(ツ)_/¯\\u0026#34;; let min_side_width = std::cmp::max( primary_text.chars().count(), secondary_text.chars().count() ) as u16 + 2; // 2 for the rect borders let (rows, columns) = get_terminal_size(); if columns / 2 \\u0026gt; min_side_width { side_by_side_ui(rows, columns, primary_text, secondary_text); } else if columns \\u0026gt; min_side_width { top_and_bottom_ui(rows, columns, primary_text, secondary_text); } else { println!(\\u0026#34;\\\\u{1b}(BSorry, terminal is too small!\\u0026#34;) } let _ = std::io::stdout().flush(); } fn main() { let mut signals = Signals::new(\\u0026amp;[ SIGWINCH, SIGTERM, SIGINT, SIGQUIT, SIGHUP ]).unwrap(); draw_ui(); for signal in signals.forever() { match signal { SIGWINCH =\\u0026gt; { draw_ui(); } SIGTERM | SIGINT | SIGQUIT | SIGHUP =\\u0026gt; { break; } _ =\\u0026gt; unreachable!(), } } println!(\\u0026#34;\\\\u{1b}[H\\\\u{1b}[J\\u0026#34;); // clear screen println!(\\u0026#34;\\\\u{1b}[?25h\\u0026#34;); // show cursor } In the main function, we\\u0026rsquo;re using the excellent signal-hook crate in order to:\\nlisten to SIGWINCH, so that we know when the window size changed Listen to SIGTERM, SIGINT, SIGQUIT and SIGHUP so that we know when the program should exit Keep the program running in a loop until one of the above signals is received We start by drawing the ui, and then we do so again every time we receive the signal.\\nEvery time this happens, we need to find out what the current size of the terminal is, and we do it with an ioctl system call.\\nThen, we conditionally decide which UI to render based on whether there\\u0026rsquo;s enough room to properly render it or not. The result looks like this:\\nHere\\u0026rsquo;s the full source for this program\\nRaw mode When developing for the terminal, we often wish for finer control over the text the user enters into their terminal and that is available to us through STDIN. Think about this use case for example:\\nWould you like to quit? [y/n] As we discussed at the beginning of this post, STDIN is line-buffered by the pty. Meaning the user would have to press ENTER after they entered their one-letter choice in order for us to read it. To get around this problem, we can set the user\\u0026rsquo;s terminal to \\u0026ldquo;raw mode\\u0026rdquo;. This achieves a few things:\\nSTDIN is read character-by-character Echo is disabled Special processing of input is disabled (eg. Ctrl-c will no longer send a SIGINT to the terminal) Here\\u0026rsquo;s a small Rust program that shows how this is done:\\nuse nix::sys::termios; fn set_raw_mode() { let mut tio = termios::tcgetattr(0).expect(\\u0026#34;could not get terminal attribute\\u0026#34;); termios::cfmakeraw(\\u0026amp;mut tio); match termios::tcsetattr(0, termios::SetArg::TCSANOW, \\u0026amp;tio) { Ok(_) =\\u0026gt; {} Err(e) =\\u0026gt; panic!(\\u0026#34;error {:?}\\u0026#34;, e), }; } fn main() { set_raw_mode(); let mut buffer = [0; 1]; let stdin = io::stdin(); let mut handle = stdin.lock(); loop { print!(\\u0026#34;\\\\n\\\\r\\u0026#34;); print!(\\u0026#34;Would you like to quit [y/n]? \\u0026#34;); io::stdout().lock().flush().unwrap(); handle.read_exact(\\u0026amp;mut buffer).unwrap(); if buffer == [121] { // y break; } } } We use the termios interface wrapped once again by the excellent nix crate in order to tell the controlling terminal of our process (identified by the 0 file descriptor for stdin, using 1 for stdout would also work here) to switch to raw mode.\\nSetting the terminal to raw mode is a pretty common practice for terminal applications. Since in raw mode, user input is not echoed back to them, the application itself can mimic this behaviour and do all sorts of things to the input:\\nChange its color depending on whether it\\u0026rsquo;s a valid command or not (like in many modern shells) Control where it wraps to make it only be displayed inside a particular part of the UI React immediately to certain characters in order to control the UI Here\\u0026rsquo;s the full source for this program\\nFinally, let\\u0026rsquo;s use all of this to create some mischief! Remember that tired old mantra \\u0026ldquo;In linux, everything is a file\\u0026rdquo;? Well, so is the pty. We can find our own pty with the ps command without any arguments. Something like this:\\n$ ps PID TTY TIME CMD 393500 pts/1 00:07:09 pty 393501 pts/1 00:00:03 fish 595419 pts/1 00:00:00 ps In the TTY column, we see pts/1 which points to /dev/pts/1. That\\u0026rsquo;s our pty. Let\\u0026rsquo;s say hi!\\n$ echo \\u0026#34;Hi!\\u0026#34; \\u0026gt; /dev/pts/1 Hi! $ Here, we redirected the STDOUT of the echo command into the STDOUT of the pty. And since this pty is ours, we saw it on screen. Let\\u0026rsquo;s open another terminal window and do the same:\\nNew window:\\n$ echo \\u0026#34;Hi from new window!\\u0026#34; \\u0026gt; /dev/pts/1 Original window:\\nHi from new window! Pretty cool, we\\u0026rsquo;re getting a whole 80s chat app vibe going on. Let\\u0026rsquo;s see if we can use some of these ANSI escape codes we learned about:\\nNew window:\\n$ echo -e \\u0026#34;Hi\\\\033[10Cthere!\\u0026#34; \\u0026gt; /dev/pts/1 Original window:\\nHi there! Well would you look at that. Since the STDOUT of the pty is interpreted by the terminal emulator of the original window, we can send it instructions to do stuff and it\\u0026rsquo;ll happily oblige. Here we told it to move the cursor 10 columns forward before printing the second word.\\nRemember that conversation you keep having with your teammates about security? About how they shouldn\\u0026rsquo;t all be logging into that production server with the same user?\\nWell. Here\\u0026rsquo;s the ANSI escape code that makes the cursor invisible: \\\\033[?25l. You can try it youself with echo -en \\u0026quot;\\\\033?[25l\\u0026quot; (to bring it back: echo -en \\u0026quot;\\\\033[?25h\\u0026quot;).\\nWouldn\\u0026rsquo;t it be awful if someone would do this to all connected users? Maybe someone using this small bashlet?\\nfor i in $(ls /dev/pts | grep -v ptmx); do echo -en \\u0026#34;\\\\033[?25l\\u0026#34; \\u0026gt; /dev/pts/$i; done Side note: please do not harass people. I believe we should differentiate situations in which this sort of mischief would be taken in good fun and others in which it would cause anguish or anxiety. As a person who is sometimes prone to anxiety, I urge you: when in doubt, please err on the side of caution and kindness.\\nConclusion In this post we gave a broad overview of the different players involved in the operation of the terminal emulator and how they communicate. We wrote some small Rust programs to demonstrate the capabilities of this platform and showed visual examples of how data is interpreted and displayed on screen.\\nI hope you learned some new things or deepened your existing knowledge. I also hope you got inspired to dabble your hands in developing for this great platform that has too often, I feel, been relegated to advanced users or a bygone past.\\nIf you liked this content, consider supporting me on Github Sponsors.\\nFurther reading The TTY demystified - a great article about the TTY/pty, its history and low level operation in Linux/Unix. The Wikipedia page for ANSI escape codes - which offers a basic rundown and explanation of the more common ones. Build your own Command Line with ANSI escape codes - a great introductory post about using ANSI escape codes from python ANSI escape codes in the VT100 manual - a little bit arcane, but a very helpful resource Acknowledgements Thanks to Kunal Mohan, Brooks Rady and Kenji for proofreading this post and offering helpful comments.\\n\""
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://poor.dev/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://poor.dev/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "\"Anatomy of a Terminal Emulator\"",
+      "item": "\"https://poor.dev/blog/terminal-anatomy/\""
+    }
+  ]
+}
+</script>
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    
+    
+    {
+      "@type": "Question",
+      "name": "\"What is a terminal emulator?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A terminal emulator is a graphical application that interprets data coming from the shell and displays it on screen. It connects to the shell via a PTY (pseudoterminal) and renders text and ANSI escape codes as visual output. Examples include gnome terminal, alacritty, and rxvt-unicode.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What are ANSI escape codes?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"ANSI escape codes are a set of instructions used by shells to communicate with terminal emulators. They control text formatting (colors, styles), cursor movement, and screen manipulation. For example, the code \\\\033[38;5;9m changes text color to red. These codes are standardized across terminal emulators and allow programs to create rich textual interfaces.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is a PTY (pseudoterminal)?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A PTY (pseudoterminal) is a bi-directional asynchronous communication channel that connects the terminal emulator to the shell. It has two sides: the primary side (connected to the terminal emulator) and the secondary side (connected to the shell). The PTY provides two channels - STDIN for input from the terminal to the shell, and STDOUT for output from the shell to the terminal.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is raw mode in a terminal?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Raw mode is a terminal setting that gives programs finer control over user input. When enabled, it: (1) reads input character-by-character instead of line-by-line, (2) disables echo (characters aren't automatically displayed), and (3) disables special input processing (like Ctrl-C sending SIGINT). This is commonly used by terminal applications that need immediate input response, like text editors and interactive prompts.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is SIGWINCH?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"SIGWINCH is a Unix signal that is triggered whenever a process's controlling terminal is resized. Terminal applications can listen for this signal to detect window size changes and redraw their UI accordingly, enabling responsive interfaces that adapt to different window sizes. This is how terminal applications create responsive UIs similar to web applications.\""
+      }
+    }
+    
+  ]
+}
+</script>
+
+
+
+
+<script data-goatcounter="https://poordev.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
 
 </head>
@@ -170,12 +316,13 @@
   
 
   <div class="post-content">
-    
+    <p><em>Originally published November 2021. The terminal emulator fundamentals, ANSI escape codes, and development patterns covered in this comprehensive guide remain current and essential knowledge for terminal application development.</em></p>
+
 
   <div data-nosnippet><p><em>To link to this post, it is advisable to use the preview URL: <a href="https://poor.dev/terminal-anatomy/">https://poor.dev/terminal-anatomy</a></em></p></div>
 
 
-<p>The terminal is a ubiquitous platform that has been fairly stable for many years. There are plenty of resources out there for understanding its inner workings, but most of them are either fairly arcane or offer deep knowledge about a very specific area. This post aims to bridge this gap by offering a gentle and broad introduction to the terminal emulator as a platform for development.</p>
+<p>The terminal is a ubiquitous platform that has been fairly stable for many years. There are plenty of resources out there for understanding its inner workings, but most of them are either fairly arcane or offer deep knowledge about a very specific area. This post aims to bridge this gap by offering a gentle and broad introduction to the terminal emulator as a platform for development. If you&rsquo;re interested in how these concepts apply to building a real terminal application, check out <a href="/blog/building-zellij-web-terminal/">how we built Zellij&rsquo;s web terminal</a>.</p>
 <p>We&rsquo;ll talk about the different parts of the terminal and how they interact, build a small program to read input from the shell and understand how it&rsquo;s interpreted, discuss how to create a user interface in the terminal and finally see how we can use all of this to cause some mischief.</p>
 <p>I&rsquo;ve used Rust for code examples, but tried to make them as simple and short as possible so that they&rsquo;ll also be comprehensible to non-Rust programmers. I also provided explanations of the relevant parts of the code. We refer to the workings of terminal emulators in a unix or unix-like system (eg. Linux and macOS). Some parts might also be relevant to other operating systems.</p>
 <p>While this is aimed at those new to developing terminal applications, I tried to go into enough depth in certain areas to keep things interesting for old terminal hounds as well.</p>
@@ -34517,7 +34664,11 @@ Let&rsquo;s take a dive and see how we as a terminal emulator would interpret it
 <p>We start by drawing the ui, and then we do so again every time we receive the signal.</p>
 <p>Every time this happens, we need to find out what the current size of the terminal is, and we do it with an <a href="https://man7.org/linux/man-pages/man2/ioctl.2.html"><code>ioctl</code></a> system call.</p>
 <p>Then, we conditionally decide which UI to render based on whether there&rsquo;s enough room to properly render it or not. The result looks like this:</p>
-<p><img alt="An animated gif of a terminal window being resized with the UI changing depending on the window size" src="/img/sigwinch.gif"></p>
+<img src="/img/sigwinch.gif"
+     alt="An animated gif of a terminal window being resized with the UI changing depending on the window size"
+     loading="lazy"
+     decoding="async">
+
 <p>Here&rsquo;s the <a href="https://github.com/imsnif/terminal-anatomy-code-examples/tree/main/responsive_terminal_ui">full source for this program</a></p>
 <h3 id="raw-mode">Raw mode</h3>
 <p>When developing for the terminal, we often wish for finer control over the text the user enters into their terminal and that is available to us through STDIN. Think about this use case for example:</p>
@@ -34608,6 +34759,42 @@ $
 <p>Thanks to <a href="https://github.com/kunalmohan">Kunal Mohan</a>, <a href="https://github.com/TheLostLambda">Brooks Rady</a> and <a href="https://github.com/a-kenji">Kenji</a> for proofreading this post and offering helpful comments.</p>
 
   </div>
+
+  
+  
+    
+  
+
+  
+  <div class="related-posts">
+    <h2>Related Posts</h2>
+    <ul>
+      
+      <li>
+        <a href="/blog/building-zellij-web-terminal/">Building Zellij&#39;s Web Terminal</a>
+        
+        <p>How we brought persistent terminal sessions to the browser</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/performance/">Improving the Performance of our Rust App</a>
+        
+        <p>A writeup of our journey to improve the performance of Zellij</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/why-zellij/">Why Zellij?</a>
+        
+        <p>The story of Zellij and its creation</p>
+        
+      </li>
+      
+    </ul>
+  </div>
+  
+
   
   <div class="pagination">
     <div class="pagination__title">

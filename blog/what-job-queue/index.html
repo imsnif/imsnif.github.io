@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   
-    <title>Implementing a job queue in Rust :: poor.dev</title>
+    <title>Implementing a job queue in Rust :: Aram Drevekenin - Terminal Developer &amp; Creator of Zellij</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<meta name="description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here"/>
-<meta name="keywords" content=""/>
+<meta name="description" content="Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.
+I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand."/>
+<meta name="keywords" content="terminal emulator, Rust development, Zellij, terminal multiplexer, software development, TUI, terminal applications, CLI tools"/>
 <meta name="robots" content="noodp"/>
 
 <link rel="canonical" href="https://poor.dev/blog/what-job-queue/" />
@@ -32,11 +33,13 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Implementing a job queue in Rust " />
-<meta name="twitter:description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here" />
+<meta name="twitter:description" content="Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.
+I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand." />
 <meta name="twitter:site" content="https://poor.dev/" />
 <meta name="twitter:creator" content="Aram Drevekenin" />
 <meta name="twitter:image" content="https://poor.dev/img/queue-cover-image.jpg">
-<meta name="twitter:image:alt" content="I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it here">
+<meta name="twitter:image:alt" content="Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.
+I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand.">
 <meta name="twitter:image:width" content="1200">
 <meta name="twitter:image:height" content="630">
 
@@ -44,13 +47,15 @@
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
 <meta property="og:title" content="Implementing a job queue in Rust ">
-<meta property="og:description" content="I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here" />
+<meta property="og:description" content="Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.
+I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand." />
 <meta property="og:url" content="https://poor.dev/blog/what-job-queue/" />
 <meta property="og:site_name" content="Implementing a job queue in Rust" />
 <meta property="og:image" content="https://poor.dev/img/queue-cover-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it here"/>
+<meta property="og:image:alt" content="Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.
+I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand."/>
 
 <meta property="article:published_time" content="2019-10-30 20:00:00 &#43;0200 &#43;0200" />
 
@@ -62,6 +67,152 @@
 
 
 
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "\"Implementing a job queue in Rust\"",
+  "description": "\"Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.\\nI recently finished my first rust project - a command line utility called \\u0026ldquo;bandwhich\\u0026rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand.\"",
+  "image": "\"https://poor.dev/img/queue-cover-image.jpg\"",
+  "datePublished": "\"2019-10-30T20:00:00+02:00\"",
+  "dateModified": "\"2026-01-16T00:00:00Z\"",
+  "author": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "description": "Indie software developer specializing in terminal applications. Creator and lead maintainer of Zellij terminal multiplexer.",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ],
+    "knowsAbout": [
+      "Terminal Emulators",
+      "Rust Programming",
+      "Terminal Multiplexers",
+      "CLI Tools",
+      "Zellij"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ]
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "\"https://poor.dev/blog/what-job-queue/\""
+  },
+  "wordCount":  1323 ,
+  "articleBody": "\"Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.\\nI recently finished my first rust project - a command line utility called \\u0026ldquo;bandwhich\\u0026rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you\\u0026rsquo;d like to check out the utility itself and browse its source, you can find it here\\nI try to always be very open to new ideas and better or different ways of doing things. If you have any thoughts, please do drop me a line! :)\\nIn this first post, I\\u0026rsquo;d like to talk about implementing a job queue to resolve IPs into their hostnames by querying a remote DNS server.\\nA little bit about \\u0026ldquo;bandwhich\\u0026rdquo; \\u0026ldquo;bandwhich\\u0026rdquo;\\u0026rsquo;s purpose is to help keep track of and debug issues involving network traffic. Like a network sniffer, it listens on a given network interface and records traffic. It then continuously displays information (eg. bandwidth) by process, connection and remote network address in a terminal UI.\\nWhy do we need a queue? When \\u0026ldquo;bandwhich\\u0026rdquo; displays information about a network address, it would ideally like to display an \\u0026ldquo;easier on the eyes\\u0026rdquo; hostname rather than an IP address (eg. \\u0026ldquo;dns.google\\u0026rdquo; instead of \\u0026ldquo;8.8.8.8\\u0026rdquo;). To do this, it uses libc\\u0026rsquo;s getnameinfo function. Unfortunately though, this function blocks the current thread. Waiting for it to return before displaying information would be a bad user experience.\\nFor this reason, we elect to have a best effort resolution. Whenever we encounter a previously unknown IP address, we place it in a queue and have a different thread read it and resolve it. We display the raw IP address until it is resolved, and its hostname once we know it.\\nWe\\u0026rsquo;ll be concentrating on implementing the queue itself. The resolution and recording of the host addresses are out of scope for this post.\\nHow does the queue work? The queue consists of several components that work together to achieve the functionality we desire.\\nThe API The \\u0026ldquo;publish\\u0026rdquo; function: used to give our queue a list of ips that need to be resolved.\\nThe \\u0026ldquo;subscribe\\u0026rdquo; function: asks the queue to give it an ip address to resolve, or to block its thread otherwise.\\nThe \\u0026ldquo;cleanup\\u0026rdquo; function: called when our program ends, so that the subscribe function knows it can stop asking for more work.\\nVecDeque The VecDeque is a data structure from the std library. Like a normal Vec, it\\u0026rsquo;s a growable list on the heap memory, and unlike Vec, it\\u0026rsquo;s double-ended. Meaning that adding/removing elements from its beginning or end is a relatively cheap operation. For more information, take a look at the official docs\\nIn our dns queue, its role is to keep track of the ip addresses we need to resolve. We push an address onto its end when we want it to be resolved, and pull an address from its beginning when we want to resolve it.\\nOur queue is represented as an Option\\u0026lt;VecDeque\\u0026gt; to make it easier for the subscribe function to know if it should be waiting for more work. As long as the Option is a Some(VecDeque), even if the queue happens to be empty at the time, the subscribe function should keep blocking its thread. When it is a None, the subscribe function should stop listening (read: return a None itself).\\nCondvar The condvar (conditional variable) is our alarm clock. It allows us to block a thread in one place and wake it up in another: the official docs\\nMutex The mutex is what we use to wrap data in order to make sure different threads can read to and write from it safely. It will only let one thread access it at a time. In our case, we use it to protect the Option\\u0026lt;VecDeque\\u0026gt;. Here are the official docs\\nThe code We want to start with a struct that has a jobs queue and a conditional variable.\\npub struct DnsQueue { jobs: Mutex\\u0026lt;Option\\u0026lt;VecDeque\\u0026lt;Ipv4Addr\\u0026gt;\\u0026gt;\\u0026gt;, cvar: Condvar, } impl DnsQueue { pub fn new() -\\u0026gt; Self { DnsQueue { jobs: Mutex::new(Some(VecDeque::new())), cvar: Condvar::new(), } } } Our jobs are a Mutex wrapping an Option\\u0026lt;VecDeque\\u0026gt; of Ipv4Addr. As mentioned earlier, we represent our queue as an Option so that we could let our subscriber function know it can stop listening by switching the Some(VecDeque) for a None value.\\nNext, our publish function - called here \\u0026ldquo;resolve_ips\\u0026rdquo; to convey more information in the code using our queue:\\npub fn resolve_ips(\\u0026amp;self, unresolved_ips: Vec\\u0026lt;Ipv4Addr\\u0026gt;) { let mut jobs = self.jobs.lock().unwrap(); if let Some(queue) = jobs.as_mut() { queue.extend(unresolved_ips); self.cvar.notify_all(); } } Here, we receive a list of IPs, and then:\\nacquire an exclusive Mutex lock on the queue push the IPs onto the back of the VecDeque send a notification to all subscribers through our Condvar, letting them know there\\u0026rsquo;s some work ready for them drop the mutex lock implicitly as the function goes out of scope Now, our subscribe function. Here, we call it \\u0026ldquo;wait_for_job\\u0026rdquo;:\\npub fn wait_for_job(\\u0026amp;self) -\\u0026gt; Option\\u0026lt;Ipv4Addr\\u0026gt; { let mut jobs = self.jobs.lock().unwrap(); loop { match jobs.as_mut()?.pop_front() { Some(job) =\\u0026gt; return Some(job), None =\\u0026gt; { jobs = self.cvar.wait(jobs).unwrap() } } } } This function:\\nchecks if the Option\\u0026lt;VecDeque\\u0026gt; contains a VecDeque or a None. If it contains a None, it returns it here: jobs.as_mut()? (as_mut will return a None if that\\u0026rsquo;s what the Option contains). Then, if there\\u0026rsquo;s something in the queue, it returns it. Otherwise, it sleeps. We sleep by moving our MutexGuard (jobs) into the Condvar and reassigning it to the Condvar\\u0026rsquo;s return value. The Condvar unlocks the guard, thus freeing it for writing. When it returns, we repeat this process, so that if it returned prematurely, we\\u0026rsquo;ll simply sleep again.\\nWe have to re-check our queue every time we wake up, because at times the wait function will return without actually being woken up, for more info check out the last paragraph in the docs\\nFinally, our cleanup function, called \\u0026ldquo;end\\u0026rdquo; in our case:\\npub fn end(\\u0026amp;self) { let mut jobs = self.jobs.lock().unwrap(); *jobs = None; self.cvar.notify_all(); } The end function:\\nacquires a lock on the Mutex changes the Option inside the Mutex to None sends a change notification through the Condvar Putting it all together use ::std::collections::VecDeque; use ::std::net::Ipv4Addr; use ::std::sync::{Condvar, Mutex}; pub struct DnsQueue { jobs: Mutex\\u0026lt;Option\\u0026lt;VecDeque\\u0026lt;Ipv4Addr\\u0026gt;\\u0026gt;\\u0026gt;, cvar: Condvar, } impl DnsQueue { pub fn new() -\\u0026gt; Self { DnsQueue { jobs: Mutex::new(Some(VecDeque::new())), cvar: Condvar::new(), } } } impl DnsQueue { pub fn resolve_ips(\\u0026amp;self, unresolved_ips: Vec\\u0026lt;Ipv4Addr\\u0026gt;) { let mut jobs = self.jobs.lock().unwrap(); if let Some(queue) = jobs.as_mut() { queue.extend(unresolved_ips); self.cvar.notify_all(); } } pub fn wait_for_job(\\u0026amp;self) -\\u0026gt; Option\\u0026lt;Ipv4Addr\\u0026gt; { let mut jobs = self.jobs.lock().unwrap(); loop { match jobs.as_mut()?.pop_front() { Some(job) =\\u0026gt; return Some(job), None =\\u0026gt; { jobs = self.cvar.wait(jobs).unwrap() } } } } pub fn end(\\u0026amp;self) { let mut jobs = self.jobs.lock().unwrap(); *jobs = None; self.cvar.notify_all(); } } An example usage of our queue might be something like:\\nfn main () { let dns_queue = Arc::new(DnsQueue::new()); let dns_handler = thread::spawn({ let dns_queue = dns_queue.clone(); move || { while let Some(ip) = dns_queue.wait_for_job() { // do something with ip here } // we get here once we receive a None from the queue } }); let some_other_thread_handler = thread::spawn({ let dns_queue = dns_queue.clone(); move || { // get `unresolved_ips: Vec\\u0026lt;Ipv4Addr\\u0026gt;` somehow... dns_queue.resolve_ips(unresolved_ips); // ... dns_queue.end(); } }); some_other_thread_handler.join().unwrap(); dns_handler.join().unwrap(); } Finally It\\u0026rsquo;s worth noting that our implementation uses a dns resolution queue of Ipv4Addr. This is the specific case of \\u0026ldquo;bandwhich\\u0026rdquo;, but this queue could also be used with a Generic T type instead of an Ipv4Addr for other uses.\\nCredits Thanks Mara Bos for the helpful comments.\\nSome diagram icons made by Those Icons and Smash Icons from https://www.flaticon.com\\n\""
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://poor.dev/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://poor.dev/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "\"Implementing a job queue in Rust\"",
+      "item": "\"https://poor.dev/blog/what-job-queue/\""
+    }
+  ]
+}
+</script>
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    
+    
+    {
+      "@type": "Question",
+      "name": "\"What is a job queue?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A job queue is a data structure that manages tasks that need to be processed asynchronously. It allows one part of a program to add work items (jobs) while separate worker threads process them independently. This is useful when operations would block the main thread, like DNS lookups or I/O operations, allowing the program to remain responsive while work is processed in the background.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"Why do I need a job queue in Rust?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A job queue in Rust is useful when you need to perform blocking operations without freezing your main application. For example, DNS hostname resolution using getnameinfo blocks the current thread. A job queue allows you to queue these operations and process them in separate threads, maintaining a responsive user experience while operations complete asynchronously.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"How does a job queue work in Rust?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A Rust job queue typically uses a VecDeque wrapped in a Mutex for thread-safe access, combined with a Condvar (conditional variable) for thread synchronization. The publisher adds jobs to the queue and notifies waiting threads via the Condvar. Subscriber threads wait on the Condvar when the queue is empty and wake up when new work arrives. The Mutex ensures only one thread accesses the queue at a time.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is a Condvar in Rust?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A Condvar (conditional variable) in Rust is a synchronization primitive that acts like an alarm clock for threads. It allows you to block a thread in one place and wake it up from another. In a job queue, the Condvar notifies worker threads when new jobs are available, allowing them to sleep efficiently when there's no work and wake immediately when work arrives.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is a Mutex in Rust?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"A Mutex in Rust is a synchronization primitive used to protect shared data from concurrent access. It ensures that only one thread can access the wrapped data at a time, preventing race conditions. When a thread wants to access the data, it must acquire a lock on the Mutex. Other threads attempting to access the same Mutex will block until the lock is released.\""
+      }
+    }
+    
+  ]
+}
+</script>
+
+
+
+
+<script data-goatcounter="https://poordev.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
 
 </head>
@@ -170,7 +321,8 @@
   
 
   <div class="post-content">
-    <p>I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it <a href="https://github.com/imsnif/bandwhich">here</a></p>
+    <p><em>Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.</em></p>
+<p>I recently finished my first rust project - a command line utility called &ldquo;bandwhich&rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&rsquo;d like to check out the utility itself and browse its source, you can find it <a href="https://github.com/imsnif/bandwhich">here</a></p>
 <p>I try to always be very open to new ideas and better or different ways of doing things. If you have any thoughts, please do drop me a line! :)</p>
 <p>In this first post, I&rsquo;d like to talk about implementing a job queue to resolve IPs into their hostnames by querying a remote DNS server.</p>
 <h2 id="a-little-bit-about-bandwhich">A little bit about &ldquo;bandwhich&rdquo;</h2>
@@ -182,7 +334,11 @@ To do this, it uses libc&rsquo;s <a href="http://man7.org/linux/man-pages/man3/g
 <p>We&rsquo;ll be concentrating on implementing the queue itself. The resolution and recording of the host addresses are out of scope for this post.</p>
 <h2 id="how-does-the-queue-work">How does the queue work?</h2>
 <p>The queue consists of several components that work together to achieve the functionality we desire.</p>
-<p><img alt="diagram" src="/img/queue-diagram.png"></p>
+<img src="/img/queue-diagram.png"
+     alt="Job queue architecture diagram showing API, workers, and data flow"
+     loading="lazy"
+     decoding="async">
+
 <h3 id="the-api">The API</h3>
 <ul>
 <li>
@@ -343,6 +499,35 @@ In our case, we use it to protect the <code>Option&lt;VecDeque&gt;</code>. Here 
 <p><!-- raw HTML omitted --><!-- raw HTML omitted -->Some diagram icons made by <a href="https://www.flaticon.com/authors/those-icons">Those Icons</a> and <a href="https://www.flaticon.com/authors/smashicons">Smash Icons</a> from <a href="https://www.flaticon.com">https://www.flaticon.com</a><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 
   </div>
+
+  
+  
+    
+  
+
+  
+  <div class="related-posts">
+    <h2>Related Posts</h2>
+    <ul>
+      
+      <li>
+        <a href="/blog/performance/">Improving the Performance of our Rust App</a>
+        
+        <p>A writeup of our journey to improve the performance of Zellij</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/terminal-anatomy/">Anatomy of a Terminal Emulator</a>
+        
+        <p>How does a terminal emulator work? What are ANSI escape codes?</p>
+        
+      </li>
+      
+    </ul>
+  </div>
+  
+
   
   <div class="pagination">
     <div class="pagination__title">

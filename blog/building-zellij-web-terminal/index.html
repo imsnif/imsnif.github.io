@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   
-    <title>Terminal sessions you can bookmark: Building Zellij&#39;s web client :: poor.dev</title>
+    <title>Terminal sessions you can bookmark: Building Zellij&#39;s web client :: Aram Drevekenin - Terminal Developer &amp; Creator of Zellij</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <meta name="description" content="How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way."/>
-<meta name="keywords" content=""/>
+<meta name="keywords" content="terminal emulator, Rust development, Zellij, terminal multiplexer, software development, TUI, terminal applications, CLI tools"/>
 <meta name="robots" content="noodp"/>
 
 <link rel="canonical" href="https://poor.dev/blog/building-zellij-web-terminal/" />
@@ -62,6 +62,152 @@
 
 
 
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "\"Terminal sessions you can bookmark: Building Zellij's web client\"",
+  "description": "\"How we brought persistent terminal sessions to the browser. Which technologies we chose and some challenges we faced along the way.\"",
+  "image": "\"https://poor.dev/img/web-terminal/cover.png\"",
+  "datePublished": "\"2025-08-18T00:00:00Z\"",
+  "dateModified": "\"2025-08-18T00:00:00Z\"",
+  "author": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "description": "Indie software developer specializing in terminal applications. Creator and lead maintainer of Zellij terminal multiplexer.",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ],
+    "knowsAbout": [
+      "Terminal Emulators",
+      "Rust Programming",
+      "Terminal Multiplexers",
+      "CLI Tools",
+      "Zellij"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ]
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "\"https://poor.dev/blog/building-zellij-web-terminal/\""
+  },
+  "wordCount":  2442 ,
+  "articleBody": "\"Zellij is a terminal workspace and multiplexer. One of the unique traits of terminal multiplexers is their ability to keep sessions alive in the background without a terminal attached to them. In the recent Zellij version we released a built-in web client, allowing users to attach to these sessions from the browser - essentially making a dedicated terminal application optional.\\nIn this post we\\u0026rsquo;re going to take a look at how we built the Zellij Web Terminal: which technologies we used, how we architected the solution and some challenges we faced along the way. For a deeper dive into how terminal emulators work and the concepts behind them, see Anatomy of a Terminal Emulator post.\\nWhat we have Keeping sessions alive in the background involves a client/server architecture. The client runs in the user\\u0026rsquo;s terminal like any other program and communicates over IPC with a server holding the state of the terminal session (open programs, pane and tab layout, etc.)\\nWhen Zellij first starts, the client spawns a new server process and daemonizes it so that it keeps running independently in the background. The client passes user input (keystrokes and mouse events) to the server, and the server passes render instructions to the client. When the client detaches from the server, the server remains alive until the client connects again.\\nThe Goal To allow the browser to act as a Zellij client, we would need:\\nA terminal emulator able to run inside the browser A web-server able to both serve this emulator and interact with the Zellij server Architecting the solution We elected to have a single web-server per machine, able to serve multiple sessions to multiple clients. Reusing the Zellij client code per connection, serving as a translation layer between the browser\\u0026rsquo;s websockets and the Zellij server\\u0026rsquo;s IPC channels. This would mean that there\\u0026rsquo;s only one web-server per machine - making administration easier while still allowing multiple-session operations per browser client.\\nSince browser clients - through the web-server - will be connected to the same IPC channels as terminal clients, they appear as regular users inside a terminal session: blurring the distinction between the two user interfaces.\\nBuilding the web server URL scheme Zellij sessions are namespaced: their names being unique per the machine they are running on. When integrating with web technologies, we get an opportunity: we can tie this uniqueness to our URL scheme. Meaning that a session called \\u0026ldquo;backend-code\\u0026rdquo; will always be accessible through https://127.0.0.1/backend-code. Here\\u0026rsquo;s how it works:\\nIf we enter a session\\u0026rsquo;s URL in our browser and the session is running, we attach to it - viewing and interacting with its running processes. If the session is not currently running but has existed in the past (eg. before a reboot) we resurrect it: Zellij will re-create this session for us from its serialized metadata so that we can keep working where we left off. If this is a completely new session, Zellij creates a session with this name and drops us into it. This has the effect of essentially giving our terminal a URL bar: we can bookmark entire sessions (eg. prod, frontend, backend), have a one-click peak into a running logfile or even be more creative and bookmark a session that atomically opens our $EDITOR pointed to a specific file (maybe shopping-list.md or TODO).\\nConnection and bi-directional communication The initial handshake between web-client and server is performed through http(s). In this handshake, the client authenticates itself with a special token (generated manually by the user through Zellij - more on the security measures below). This handshake also serves to establish which session the client will initially connect to. Using the URL path as explained above.\\nOnce the client is authenticated and the connection established, two websocket channels are established: a terminal channel and a control subchannel.\\nThe terminal channel is used by the server to send STDOUT bytes to the client (essentially ANSI instructions representing renders) and by the client to send STDIN bytes to the server (keypresses and mouse events). The control subchannel is used by the client side to send window resizes to the server and by the server side to send configuration changes, log messages and switch-session instructions to the client.\\nThe reason these two are separated is two-fold: first so that they don\\u0026rsquo;t end up blocking each other and second as a performance consideration to allow the potentially-heavy-throughput STDOUT not to be serialized/deserialized to distinguish it from control messages. We initially thought this would also allow us to apply backpressure from the browser all the way to the terminal application in order to batch up messages until they are fully processed, but this ended up not being necessary (as this is done well enough on the Zellij application side before it reaches the web server).\\nSecurity model Since terminals are a sensitive interface to any machine, we were conscious about including built-in security measures with the solution. To log in, users need to generate a login-token from within a Zellij session (either from the command-line or from the Zellij UI).\\nSpecial care has been taken for this token never to be saved in its clear form in any storage. On the server-side, it is hashed and kept in a local SQLite database where it cannot be retrieved, only revoked. On the client-side, it is initially sent through the POST parameters of the handshake and then exchanged for a temporary session-token. This session-token is saved as an \\u0026ldquo;http only\\u0026rdquo; cookie so that the client-side code cannot access it. On the server side it is read from the http-headers.\\nThe Zellij web-server enforces the use of HTTPS with a user-supplied certificate when listening on external interfaces. HTTP is only allowed when listening on localhost. We believe this is a reasonable compromise between security and user-friendliness. Allowing users to try the web capabilities locally first without forcing them to create an HTTPS certificate, but requiring one for terminal traffic passing over the wire.\\nAuthenticated users are considered trusted, since by definition they have the same permissions and access as the web-server itself.\\nServer side technologies Since Zellij is written in Rust, we naturally decided to use Rust to develop the web-server as well.\\nWe chose axum as our webserver because we liked its mix-and-match approach - allowing us to plug in custom technology implementations and middleware (eg. the tower ecosystem for cookie and CORS handling), or use its built-in options when possible. We liked that it integrates seamlessly with tokio (our async runtime) and that it provides a \\u0026ldquo;native\\u0026rdquo; websocket implementation (using tokio-tungstenite under the hood). We also liked its declarative rather than macro-like routing system, even though we believe this last is mostly an aesthetic choice.\\nWith axum, our web routes look like this (simplified):\\nlet app = Router::new() .route(\\u0026#34;/ws/control\\u0026#34;, any(ws_handler_control)) .route(\\u0026#34;/ws/terminal\\u0026#34;, any(ws_handler_terminal)) .route_layer(middleware::from_fn(auth_middleware)) .route(\\u0026#34;/\\u0026#34;, get(serve_html)) .route(\\u0026#34;/{session}\\u0026#34;, get(serve_html)) .route(\\u0026#34;/assets/{*path}\\u0026#34;, get(get_static_asset)) .with_state(state); Here we are able to protect the websocket routes (them being the ones who actually end up creating, attaching and communicating with the Zellij sessions) with an authentication middleware, while serving static assets in routes not protected by authentication.\\nWe chose rustls for serving the client with HTTPS rather than relying on openssl. Elsewhere in the app we made the opposite choice and found that this creates a great deal of complexity when packaging Zellij for third-parties (eg. linux distributions and crates.io). We hope to use this decision as a crutch to slowly migrate the rest of the app to do the same, rather than doubling-down on a decision that ended up causing us trouble. The trade-off is mostly binary-size, but in this day and age we believe this is not an issue in the vast majority of environments.\\nFor static assets, we use rust\\u0026rsquo;s include_dir! macro, packaging them as part of the executable. This is a must for us as a distributable application rather than a managed web-server.\\nHandling daemonization Given our architecture, there are a few occasions in which we need to daemonize the web-server - it being implemented as a separate process that serves all sessions on the machine. We do this with the daemonize crate, which gives a split interface: one branch for the child (the web server instance in our case) and one branch for the parent (the process invoking the web-server - for example the Zellij command line or another Zellij process). One challenge in this approach is error reporting. If the web-server failed to start for one reason or another, we need to be able to let the invoking process know so that we can display a proper error to the user (eg. Permission denied, Address in use, etc.)\\nTo do this, we use the privileged_action method of the daemonize crate, allowing us to run code in the child process after the fork but before it detaches itself from the parent process\\u0026rsquo;s environment. In this method we run as much error prone operations as possible, creating the necessary entities (runtime, TLS config, TCP listener) for the child if successful. We then use a Unix pipe to let the parent process know the result of these operations (in the form of an exit_code) as well as provide a relevant textual error if the operation was not successful.\\nfn daemonize_web_server() -\\u0026gt; (/* server_resources */) { // Create pipes for parent-child communication let (mut exit_message_tx, exit_message_rx) = pipe().unwrap(); let (mut exit_status_tx, mut exit_status_rx) = pipe().unwrap(); let daemonization_outcome = daemonize::Daemonize::new() .privileged_action(move || -\\u0026gt; Result\\u0026lt;/* server_resources */, String\\u0026gt; { // Perform error-prone operations before full daemonization: // - Create async runtime // - Load TLS certificates // - Bind TCP listener // Convert all errors to strings for IPC }) .execute(); match daemonization_outcome { Outcome::Parent(Ok(parent)) =\\u0026gt; { // Parent waits for child\\u0026#39;s initialization result let mut buf = [0; 1]; exit_status_rx.read_exact(\\u0026amp;mut buf); let exit_status = buf[0] as i32; // Read error message if any let mut message = String::new(); let mut reader = BufReader::new(exit_message_rx); reader.read_line(\\u0026amp;mut message); // Display result and exit with child\\u0026#39;s status if exit_status == 0 { println!(\\u0026#34;{}\\u0026#34;, message.trim()); } else { eprintln!(\\u0026#34;{}\\u0026#34;, message.trim()); } std::process::exit(exit_status); }, Outcome::Child(Ok(child)) =\\u0026gt; match child.privileged_action_result { Ok(server_resources) =\\u0026gt; { // Success: notify parent and continue as daemon exit_status_tx.write_all(\\u0026amp;[0]); writeln!(exit_message_tx, \\u0026#34;Web Server started\\u0026#34;); server_resources }, Err(error) =\\u0026gt; { // Failure: send error to parent and exit exit_status_tx.write_all(\\u0026amp;[2]); writeln!(exit_message_tx, \\u0026#34;{}\\u0026#34;, error); std::process::exit(2); }, }, } } Client side technologies The client-side includes a fully featured terminal: the excellent xterm.js. xterm.js has been around for many years and is used among other places as the terminal emulator in VSCode. It is battle tested and feature rich. xterm.js performs most of the work on the client side (terminal rendering and user input), but we had to write some custom integrations to make it fit with our use-case.\\nA prime example: at the time of writing xterm.js does not support mouse AnyEvent tracking, which Zellij heavily relies on. In this terminal mouse mode, mouse motions are sent to the terminal along with other events (eg. press and release). To work around this, we listen to the browser \\u0026ldquo;mousemove\\u0026rdquo; event, translate it to an ANSI instruction and send it to the server. Since mouse AnyEvent works with columns/rows rather than coordinates, we use an internal xterm.js function to make the translation. Not ideal, but works in a pinch.\\nterminal_element.addEventListener(\\u0026#34;mousemove\\u0026#34;, function (event) { if (event.buttons == 0) { // this means no mouse buttons are pressed and this is just a mouse movement let { col, row } = term._core._mouseService.getMouseReportCoords( event, terminal_element ); if (prev_col != col || prev_row != row) { sendFunction(`\\\\x1b[\\u0026lt;35;${col + 1};${row + 1}M`); } prev_col = col; prev_row = row; } }); Another example involves window titles. When working with a standard dedicated terminal application, it is often the case where the window title reflects the current working directory or the program name. This is done with an ANSI instruction called \\u0026ldquo;OSC 0\\u0026rdquo;. You can try it yourself: echo -e \\u0026quot;\\\\033]0;my awesome title\\\\007\\u0026quot; (note: you might want to add an \\u0026amp;\\u0026amp; sleep 10 afterwards because some shell prompts will change it back immediately). Zellij uses this instruction to display both the session name and the title of the currently focused pane to the terminal. We would of course like this to also be the case for the browser - and more crucially, to the browser tab. To make this work, we intercept this instruction in the rendered bytes with a regex, changing the document.title to match:\\nwsTerminal.onmessage = function (event) { // ... let data = event.data; const titleRegex = /\\\\x1b\\\\]0;([^\\\\x07\\\\x1b]*?)(?:\\\\x07|\\\\x1b\\\\\\\\)/g; let match; while ((match = titleRegex.exec(data)) !== null) { document.title = match[1]; } // ... }; Why not Typescript? While our client-side implementation leans heavily toward simple no-dependency solutions, coming from a strongly typed language like Rust we appreciate the value of being able to define data types for our interfaces. Typescript could offer significant benefits for our use-case, especially with regards to the various websocket message types.\\nOn the other hand, Typescript comes with the heavy tax of an extra build-step. A tax particularly significant in our case since otherwise our client-side code does not have a build step at all.\\nWhile we could have implemented the build-step as part of the Zellij build-system (using the excellent cargo xtask), we were wary of the extra build complexity (the usual \\u0026ldquo;Are my changes failing because of issues in my code or in the build system?\\u0026rdquo;)\\nWe ultimately decided against it. Reasoning that since our client-side code is relatively small, the complexity of introducing another build-step is more error prone than not using types at all. Time will tell if we made the right choice, and we might revisit it again as our client-side code expands.\\nWhat\\u0026rsquo;s next? The Zellij web client is a small step forward in the larger scheme of things. It is a first-class interface into another medium.\\nIn the upcoming Zellij versions I plan to expand the web interface to include native rendering of UI components. I plan to allow blending multiple Zellij sessions with full-fledged read/write permissions, blurring the distinction between different machines on the UI level. I plan to follow up with hosted solutions for multiplayer terminal sessions.\\nIf you are interested, the best way to follow along is to become a Zellij user and help build upon this infrastructure. We\\u0026rsquo;re just getting started.\\nPlease Sponsor Me and Zellij Development ❤️ Zellij is developed and maintained as a labor of love, but love does not pay the bills.\\nZellij will always be free and open-source. Zellij will never contain ads or collect your data.\\nIf you are able, consider sponsoring the Zellij creator and lead developer with a recurring monthly donation. There are Zellij stickers in it for you!\\n\""
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://poor.dev/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://poor.dev/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "\"Terminal sessions you can bookmark: Building Zellij's web client\"",
+      "item": "\"https://poor.dev/blog/building-zellij-web-terminal/\""
+    }
+  ]
+}
+</script>
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    
+    
+    {
+      "@type": "Question",
+      "name": "\"How do you build a terminal emulator in the browser?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Building a browser-based terminal involves using a JavaScript terminal library like xterm.js for rendering and input handling, establishing WebSocket connections for bi-directional communication with a backend server, and translating between browser events (keystrokes, mouse movements) and terminal protocols (ANSI escape codes). The backend server handles the actual terminal sessions and forwards I/O between the browser and shell processes.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is xterm.js?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"xterm.js is a battle-tested JavaScript library that implements a full-featured terminal emulator in the browser. It's used in VSCode and handles terminal rendering, ANSI escape code interpretation, and user input. It provides APIs for receiving output data, capturing keyboard and mouse events, and configuring terminal behavior, making it the de facto standard for browser-based terminals.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"How do WebSockets work for terminal communication?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"WebSockets provide full-duplex communication channels over a single TCP connection, ideal for terminal sessions. After an initial HTTP handshake, the connection upgrades to WebSocket protocol, allowing the server to send terminal output (STDOUT/ANSI codes) to the browser and the browser to send user input (STDIN/keypresses) to the server in real-time without polling. Separate channels can be used for terminal data and control messages.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"Why use Rust for web server development?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Rust offers memory safety without garbage collection, excellent performance, and strong concurrency primitives - ideal for handling multiple WebSocket connections and terminal sessions. Frameworks like axum provide ergonomic routing and middleware systems, while integration with tokio enables efficient async I/O. Rust's type system helps prevent common web security issues at compile time.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What is process daemonization and why is it important?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Daemonization is the process of detaching a program from the terminal that started it, allowing it to run in the background independently. This is crucial for web servers that need to persist beyond the lifetime of the process that spawned them. In Rust, this involves forking the process, detaching from the controlling terminal, and handling inter-process communication for error reporting using techniques like Unix pipes.\""
+      }
+    }
+    
+  ]
+}
+</script>
+
+
+
+
+<script data-goatcounter="https://poordev.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
 
 </head>
@@ -171,7 +317,7 @@
 
   <div class="post-content">
     <p><a href="https://zellij.dev">Zellij</a> is a terminal workspace and multiplexer. One of the unique traits of terminal multiplexers is their ability to keep sessions alive in the background without a terminal attached to them. In the <a href="https://zellij.dev/news/web-client-multiple-pane-actions/">recent Zellij version</a> we released a built-in web client, allowing users to attach to these sessions from the browser - essentially making a dedicated terminal application optional.</p>
-<p>In this post we&rsquo;re going to take a look at how we built the Zellij Web Terminal: which technologies we used, how we architected the solution and some challenges we faced along the way.</p>
+<p>In this post we&rsquo;re going to take a look at how we built the Zellij Web Terminal: which technologies we used, how we architected the solution and some challenges we faced along the way. For a deeper dive into how terminal emulators work and the concepts behind them, see <a href="/blog/terminal-anatomy/">Anatomy of a Terminal Emulator</a> post.</p>
 <h2 id="what-we-have">What we have</h2>
 <p>Keeping sessions alive in the background involves a client/server architecture. The client runs in the user&rsquo;s terminal like any other program and communicates over IPC with a server holding the state of the terminal session (open programs, pane and tab layout, etc.)</p>
 <p>When Zellij first starts, the client spawns a new server process and daemonizes it so that it keeps running independently in the background. The client passes user input (keystrokes and mouse events) to the server, and the server passes render instructions to the client. When the client detaches from the server, the server remains alive until the client connects again.</p>
@@ -182,11 +328,19 @@
 <li>A web-server able to both serve this emulator and interact with the Zellij server</li>
 </ol>
 <h2 id="architecting-the-solution">Architecting the solution</h2>
-<p><img alt="architecture diagram - showing the many-to-many relationship between the Zellij web server and terminal sessions" src="/img/web-terminal/architecture.png"></p>
+<img src="/img/web-terminal/architecture.png"
+     alt="architecture diagram - showing the many-to-many relationship between the Zellij web server and terminal sessions"
+     loading="lazy"
+     decoding="async">
+
 <p>We elected to have a single web-server per machine, able to serve multiple sessions to multiple clients. Reusing the Zellij client code per connection, serving as a translation layer between the browser&rsquo;s websockets and the Zellij server&rsquo;s IPC channels. This would mean that there&rsquo;s only one web-server per machine - making administration easier while still allowing multiple-session operations per browser client.</p>
 <p>Since browser clients - through the web-server - will be connected to the same IPC channels as terminal clients, they appear as regular users inside a terminal session: blurring the distinction between the two user interfaces.</p>
 <h2 id="building-the-web-server">Building the web server</h2>
-<p><img alt="web-server diagram - demonstrating the relationship between the browser and the Zellij web server" src="/img/web-terminal/web-server-diagram.png"></p>
+<img src="/img/web-terminal/web-server-diagram.png"
+     alt="web-server diagram - demonstrating the relationship between the browser and the Zellij web server"
+     loading="lazy"
+     decoding="async">
+
 <h4 id="url-scheme">URL scheme</h4>
 <p>Zellij sessions are namespaced: their names being unique per the machine they are running on. When integrating with web technologies, we get an opportunity: we can tie this uniqueness to our URL scheme. Meaning that a session called &ldquo;backend-code&rdquo; will always be accessible through <code>https://127.0.0.1/backend-code</code>. Here&rsquo;s how it works:</p>
 <ol>
@@ -318,6 +472,42 @@ One challenge in this approach is error reporting. If the web-server failed to s
 <p>If you are able, consider sponsoring the Zellij creator and lead developer with <a href="https://github.com/sponsors/imsnif">a recurring monthly donation</a>. There are Zellij stickers in it for you!</p>
 
   </div>
+
+  
+  
+    
+  
+
+  
+  <div class="related-posts">
+    <h2>Related Posts</h2>
+    <ul>
+      
+      <li>
+        <a href="/blog/terminal-anatomy/">Anatomy of a Terminal Emulator</a>
+        
+        <p>How does a terminal emulator work? What are ANSI escape codes?</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/why-zellij/">Why Zellij?</a>
+        
+        <p>The story of Zellij and its creation</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/performance/">Improving the Performance of our Rust App</a>
+        
+        <p>A writeup of our journey to improve the performance of Zellij</p>
+        
+      </li>
+      
+    </ul>
+  </div>
+  
+
   
   <div class="pagination">
     <div class="pagination__title">

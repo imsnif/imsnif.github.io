@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Hi there! on poor.dev</title>
+    <title>Hi there! on Aram Drevekenin - Terminal Developer &amp; Creator of Zellij</title>
     <link>https://poor.dev/</link>
-    <description>Recent content in Hi there! on poor.dev</description>
+    <description>Recent content in Hi there! on Aram Drevekenin - Terminal Developer &amp; Creator of Zellij</description>
     <generator>Hugo</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 18 Aug 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 16 Jan 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://poor.dev/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Terminal sessions you can bookmark: Building Zellij&#39;s web client</title>
@@ -48,7 +48,7 @@
       <link>https://poor.dev/blog/what-job-queue/</link>
       <pubDate>Wed, 30 Oct 2019 20:00:00 +0200</pubDate>
       <guid>https://poor.dev/blog/what-job-queue/</guid>
-      <description>I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand. I hope it will be the first of many. If you&amp;rsquo;d like to check out the utility itself and browse its source, you can find it here</description>
+      <description>Originally published October 2019. While this post uses older Rust patterns, the core concepts and approach to implementing job queues remain relevant and applicable to modern Rust development.&#xA;I recently finished my first rust project - a command line utility called &amp;ldquo;bandwhich&amp;rdquo; that displays network utilization information. As a newcomer to rust, this project offered quite some challenges for me. This post is a write up of one of them, going into detail on the parts that I personally found most difficult to understand.</description>
     </item>
     <item>
       <title>External work</title>

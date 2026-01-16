@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   
-    <title>Why Zellij? :: poor.dev</title>
+    <title>Why Zellij? :: Aram Drevekenin - Terminal Developer &amp; Creator of Zellij</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <meta name="description" content="The story of Zellij and its creation."/>
-<meta name="keywords" content=""/>
+<meta name="keywords" content="terminal emulator, Rust development, Zellij, terminal multiplexer, software development, TUI, terminal applications, CLI tools"/>
 <meta name="robots" content="noodp"/>
 
 <link rel="canonical" href="https://poor.dev/blog/why-zellij/" />
@@ -62,6 +62,152 @@
 
 
 
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "\"Why Zellij?\"",
+  "description": "\"The story of Zellij and its creation.\"",
+  "image": "\"https://poor.dev/img/why-zellij.png\"",
+  "datePublished": "\"2024-10-30T09:00:00+02:00\"",
+  "dateModified": "\"2024-10-30T09:00:00+02:00\"",
+  "author": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "description": "Indie software developer specializing in terminal applications. Creator and lead maintainer of Zellij terminal multiplexer.",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ],
+    "knowsAbout": [
+      "Terminal Emulators",
+      "Rust Programming",
+      "Terminal Multiplexers",
+      "CLI Tools",
+      "Zellij"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Aram Drevekenin",
+    "url": "https://poor.dev",
+    "jobTitle": "Terminal Developer & Creator of Zellij",
+    "sameAs": [
+      "https://github.com/imsnif",
+      "https://www.linkedin.com/in/aram-drevekenin-b620235b/",
+      "https://zellij.dev"
+    ]
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "\"https://poor.dev/blog/why-zellij/\""
+  },
+  "wordCount":  1636 ,
+  "articleBody": "\"I am a terminal developer. I write my code inside vim, I use Zellij to manage my terminal workspace and automate everyday tasks. My desktop environment is a wrapper around the two most ubiquitous application development platforms of our time: the terminal and the browser.\\nThose of us using Zellij often get asked: \\u0026ldquo;Why Zellij?\\u0026rdquo;\\nI usually avoid this question, because I feel the choices of software and stack are deeply personal. I don\\u0026rsquo;t like convincing people or evangelizing - I prefer creating great tools and allowing them to speak for themselves. In this post however, I\\u0026rsquo;m going to fill this gap by trying something different: I\\u0026rsquo;m going to tell the story of Zellij.\\nMy Story I\\u0026rsquo;ve been a linux user since I was 15. Using bash and later perl to automate my personal tasks. I used nano as my text editor and later when I wanted syntax highlighting I moved to vim. Whenever I opened a full-fledged graphical IDE, I was confused and overwhelmed by the mixture of text editing and code analysis. The various menus and tooltips that kept popping up whenever I typed anything made me anxious. So I stuck with vim.\\nAs a terminal developer, I believe that my code editor is just that: a code editor. It\\u0026rsquo;s there to display and manipulate text fast and efficiently. It\\u0026rsquo;s not there to run my code, analyze it, provide tools to manipulate it or collaborate on it with others. For developers like me, this sort of magic happens inside the terminal itself.\\nThe cool thing about this approach is that you absolutely have to build your own tools. Whether through code or heavy configuration. There is no one-shot application that does all of this for you. You develop a personal relationship with your terminal workspace, making it behave exactly as you want it to without compromise. You share tricks with others through dotfile repositories and generally focus on improving workflows - because everything is pluggable.\\nThe frustrating thing about this approach is that you absolutely have to build your own tools. There is no one-shot application that does all of this for you. Your relationship with your terminal workspace is often lonely. Most others see your ways as impractical and user-hostile. Moving to a different computer is often an adventure and your workspace is something you need to maintain on your own.\\nI created Zellij because I believe there is a better way. I believe we can have our cake and eat it.\\nThe Story of Zellij The terminal is an amazing application platform. It\\u0026rsquo;s probably the most ubiquitous user-facing one we have. It has been mostly stable for decades, and has emerging properties that I feel place its rendering methods light-years ahead of traditional graphical environments.\\nAnd yet it is extremely underutilized. Many developers use it grudgingly, preferring their graphical tools. They consider it a necessary evil, a relic of a bygone era that should pass away from the world. And who can blame them? The terminal at its core is a user-hostile environment. Little thought is given to making it more approachable to users beyond minor necessities such as managing tabs, splits and sessions. Terminal developers are often considered removed from others - either looked up to as elite or looked down upon as disconnected. Either way, we are seen as a distant anomaly.\\nIt doesn\\u0026rsquo;t have to be this way.\\nI created Zellij not just for me and other terminal developers. I created Zellij for anyone who loves the terminal, or would like to love it. Zellij is a user-friendly terminal workspace that does not sacrifice simplicity for power. Placing the full power of the terminal at everyone\\u0026rsquo;s fingertips without forcing them to climb a mountain of lore and domain knowledge.\\nZellij is powerful, simple, beautiful and yet deeply configurable.\\nZellij is not a replacement for any other software. It is a re-imagining of the terminal that doesn\\u0026rsquo;t leave anyone behind.\\nZellij is Discoverable One of the reasons terminal software is often considered hostile is that creating discoverable textual interfaces is hard. Creating discoverable interfaces in general is a challenge, and doing so without the benefit of a mouse or a touch screen is even harder. Terminal application developers understandably often skip this stage, deferring instead to cheat-sheets and manual pages that are outside the application itself. Zellij places an emphasis on having these in-app and on-screen.\\nIt is my belief that an interface being discoverable and looking good is one of the most important aspects of using software. It not only makes new and returning users feel at home, it helps discovering features and allowing users to get the most out of their tools. I believe this aspect should not be an add-on, but rather a core principle of the software.\\nZellij is an Application Platform and Runtime Zellij is designed primarily as an application platform. It can run terminals just as easily as it can run custom built applications that we call plugins. While the plugin ecosystem is young, this is the direction the project is going.\\nThese plugins are designed to be:\\nEasy to develop - since the plugin system uses webassembly/wasi as a runtime, one should in the future (once some more SDKs are developed) be able to use any language to develop them (right now it\\u0026rsquo;s either Rust or Go). One can also use a common UI language in the form of UI components to forgo developing one\\u0026rsquo;s own, as well as be in sync with the rest of the user\\u0026rsquo;s UI and theme. More powerful than terminal applications - they can do anything a terminal application does, plus be aware of the whole workspace and communicate/spawn each other in a preditable way. More secure than terminal applications - the system interface as well as application state are gated behind a permission system. More portable than terminal applications - compiled binaries can run on any system that has a Zellij instance and do not require any installation. Zellij does not Rely on Graphical Assets to Render Itself I believe terminal emulation is the most ubiquitous user-facing platform we have. While not perfect, it\\u0026rsquo;s been around for a long while and is mostly stable. Any other platform (eg. desktop applications, browser applications or even terminal emulators themselves) represents a lock-in of one sort or another. Either to the platform itself or to some sort of infrastructure or other translation-layer. I believe the only way to ensure that an application and indeed an application development platform lasts is to base its rendering on text.\\nThis has many other emerging properties, such as UIs (or parts of them) being replayable as well as being parsable by external tools (indeed, this is how we run our e2e tests).\\nI don\\u0026rsquo;t believe this is a limitation, I believe it\\u0026rsquo;s a strength. I would not want my development UI to be built from GUI assets.\\nA Zellij Workspace is Truly Portable Zellij is designed to assist users in creating their own workspaces. As a pluggable combination of layouts and plugins that can be easily shared with others or when moving to new machines. Not as a brittle soup of bash scripts but as a single, concise and Human-readable configuration file.\\nZellij is Free Zellij is a gift to the developer community at large and indeed to all those who use a terminal. It\\u0026rsquo;s free, it\\u0026rsquo;s open-source and it is respecful of its users and their privacy. Zellij will never display ads or collect user-data. Indeed, its infrastructure is designed in such a way as to make these practices very hard for applications built on top of it.\\nZellij is a labor of love and passion. Asking users who love it to pay as they wish to support the Zellij development, or not pay at all if they are unable or unwilling.\\nThe Story of Zellij is Just Beginning The task of re-imagining the terminal is a large one. Hundreds of developer hours have been poured into Zellij and yet it is still pre-1.0. This is to be expected. I believe in consistent incremental improvement and I believe in developing in the open.\\nThis means that when using Zellij, there might be a few papercuts here and there. Personally as a linux user, I\\u0026rsquo;m used to things being this way. But this doesn\\u0026rsquo;t mean I don\\u0026rsquo;t strive to fix everything as fast as possible and provide users with a smooth experience.\\nRight now, I\\u0026rsquo;m concentrating on building the infrastructure that facilitates this re-imagining. Some pieces are already in place, but many aren\\u0026rsquo;t. Using Zellij today means being an early adopter. It means having a say about how the application will take shape over the years. It\\u0026rsquo;s an exciting journey and experience, but I will be the first to say it\\u0026rsquo;s not for everyone.\\nIf you\\u0026rsquo;re interested in the technical details of how we\\u0026rsquo;ve built and optimized Zellij, check out my posts on improving performance and building the web terminal.\\nWhere do we go from here? If you are interested in the project, the best way to support it is to become a user. There\\u0026rsquo;s a bustling user community spread across multiple Internet spaces. Enjoy the software, extend it with plugins and configuration - support others on their journey. Understand that Zellij is not here to replace any other tool.\\nZellij is here to place the terminal on the central stage where it belongs.\\nSupport Me and Zellij Development ❤️ I spend 100% of my time developing Zellij. I\\u0026rsquo;m mostly living on my savings because I deeply believe in this project, its userbase and its future. If you\\u0026rsquo;d like to support me and are able, a recurring donation of 5-10$ a month is the most sustainable way of doing so. It will really help me pay my bills.\\nSo please consider sponsoring my work.\\n\""
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://poor.dev/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://poor.dev/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "\"Why Zellij?\"",
+      "item": "\"https://poor.dev/blog/why-zellij/\""
+    }
+  ]
+}
+</script>
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    
+    
+    {
+      "@type": "Question",
+      "name": "\"What is Zellij?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Zellij is a user-friendly terminal workspace and multiplexer that makes the terminal accessible and powerful for everyone. It's an application platform that can run both terminal applications and custom plugins built with WebAssembly. Zellij emphasizes discoverability, configurability, and portability while being free and open-source.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"Why should I use Zellij over other terminal multiplexers?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Zellij is designed to be discoverable and user-friendly without sacrificing power. Unlike other multiplexers that require cheat-sheets and extensive learning, Zellij provides in-app guidance and on-screen help. It's built as an application platform with a plugin system, offers better security through permissions, and creates truly portable workspaces that can be easily shared or moved between machines.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"Is Zellij free?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Yes, Zellij is completely free and open-source. It will never display ads or collect user data. Zellij respects user privacy and is designed to make such practices very hard for applications built on top of it. The project accepts voluntary donations from users who wish to support development, but it remains free for all.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"What makes Zellij discoverable?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Zellij places emphasis on having documentation and help available in-app and on-screen, rather than requiring users to consult external cheat-sheets and manuals. The interface is designed to help users discover features naturally while using the software, making terminal workflows more accessible to both new and returning users.\""
+      }
+    }
+    
+    ,
+    {
+      "@type": "Question",
+      "name": "\"Can I extend Zellij with plugins?\"",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "\"Yes, Zellij is designed primarily as an application platform with a plugin system using WebAssembly/WASI as a runtime. Plugins can be developed in multiple languages (currently Rust or Go, with more SDKs planned), are more powerful than terminal applications, more secure through a permission system, and more portable as compiled binaries run on any system with Zellij installed.\""
+      }
+    }
+    
+  ]
+}
+</script>
+
+
+
+
+<script data-goatcounter="https://poordev.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
 
 </head>
@@ -211,6 +357,7 @@
 <p>The task of re-imagining the terminal is a large one. Hundreds of developer hours have been poured into Zellij and yet it is still pre-1.0. This is to be expected. I believe in consistent incremental improvement and I believe in developing in the open.</p>
 <p>This means that when using Zellij, there might be a few papercuts here and there. Personally as a linux user, I&rsquo;m used to things being this way. But this doesn&rsquo;t mean I don&rsquo;t strive to fix everything as fast as possible and provide users with a smooth experience.</p>
 <p>Right now, I&rsquo;m concentrating on building the infrastructure that facilitates this re-imagining. Some pieces are already in place, but many aren&rsquo;t. Using Zellij today means being an early adopter. It means having a say about how the application will take shape over the years. It&rsquo;s an exciting journey and experience, but I will be the first to say it&rsquo;s not for everyone.</p>
+<p>If you&rsquo;re interested in the technical details of how we&rsquo;ve built and optimized Zellij, check out my posts on <a href="/blog/performance/">improving performance</a> and <a href="/blog/building-zellij-web-terminal/">building the web terminal</a>.</p>
 <h3 id="where-do-we-go-from-here">Where do we go from here?</h3>
 <p>If you are interested in the project, the best way to support it is to become a user. There&rsquo;s a bustling user community spread across multiple Internet spaces. Enjoy the software, extend it with plugins and configuration - support others on their journey. Understand that Zellij is not here to replace any other tool.</p>
 <p>Zellij is here to place the terminal on the central stage where it belongs.</p>
@@ -219,6 +366,42 @@
 <p>So please consider <a href="https://github.com/sponsors/imsnif">sponsoring my work</a>.</p>
 
   </div>
+
+  
+  
+    
+  
+
+  
+  <div class="related-posts">
+    <h2>Related Posts</h2>
+    <ul>
+      
+      <li>
+        <a href="/blog/building-zellij-web-terminal/">Building Zellij&#39;s Web Terminal</a>
+        
+        <p>How we brought persistent terminal sessions to the browser</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/performance/">Improving the Performance of our Rust App</a>
+        
+        <p>A writeup of our journey to improve the performance of Zellij</p>
+        
+      </li>
+      
+      <li>
+        <a href="/blog/terminal-anatomy/">Anatomy of a Terminal Emulator</a>
+        
+        <p>How does a terminal emulator work? What are ANSI escape codes?</p>
+        
+      </li>
+      
+    </ul>
+  </div>
+  
+
   
   <div class="pagination">
     <div class="pagination__title">
